@@ -14,6 +14,11 @@ var Vertex = {
 	uv : $V([0, 0])
 };
 
+var Face = {
+	indices : $V([0, 0, 0]),
+	normal : $V([0, 0, 0])
+}
+
 var Mesh = {
 	// internal arrays, less org than external facing arrays
 	_vertices : new Float32Array(),
@@ -33,7 +38,7 @@ var Mesh = {
 			this._uv += v.uv.elements;
 		}
 		for (var i in this.indices) {
-			this._indices += i.elements;
+			this._indices += i.indices.elements;
 		}
 	},
 	initBuffers : function() {
@@ -78,14 +83,32 @@ var Mesh = {
 };
 
 // utilities for making random geometry
-function createSingleTriangleMesh(a, b, c, twosided=true, ccw=true) {
+function createSingleTriangleMesh(a, b, c, twosided=true) {
+	// TODO add texture coordinates, bounding square
 	var omesh = new Mesh();
 	
-	omesh.vertices.push(a);
-	omesh.vertices.push(b);
-	omesh.vertices.push(c);
+	var va = new Vertex(), vb = new Vertex(), vc = new Vertex();
 	
-	// triangulate using poly-triangulate method (ear cutting algorithm)
+	va.position = a;
+	vb.position = b;
+	vc.position = c;
+	
+	var faceNorm = b.sub(a).cross(c.sub(a)).normalize();
+	va.normal = vb.normal = vc.normal = faceNorm;
+	
+	omesh.vertices.push(va);
+	omesh.vertices.push(vb);
+	omesh.vertices.push(vc);
+	
+	if (twosided) {
+		// need a second set of verts for a double sided tri with normals pointing the opposite way
+		var vd = new Vertex(), ve = new Vertex(), vf = new Vertex();
+		vd.normal = ve.normal = vf.normal = faceNorm.multiply(-1);
+		
+		omesh.vertices.push(vd);
+		omesh.vertices.push(ve);
+		omesh.vertices.push(vf);
+	}
 }
 
 function createSingleQuadMesh(a, b, c, d, twosided=true, ccw=true) {
