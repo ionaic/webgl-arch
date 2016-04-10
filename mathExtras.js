@@ -86,7 +86,7 @@ function GetFaceNormal(a, b, c) {
 	var onorm = ab.cross(ac);
 	
 	// the average is the face norm for lighting, but this isn't the physics normal to the face necessarily
-	var avgnorm = a.normal.add(b.normal).add(c.normal).map(function(x) {return x/;});
+	var avgnorm = a.normal.add(b.normal).add(c.normal).map(function(x) {return x / 3.0;});
 	
 	// test if they're pointing the same or opposite ways using the dot product
 	var ndot = onorm.dot(avgnorm);

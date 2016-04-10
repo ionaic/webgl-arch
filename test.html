@@ -3,10 +3,13 @@
 		<script type="text/javascript" src="sylvester-0-1-3/sylvester.js"></script>
         <script type="text/javascript" src="gl.js"></script>
         <script type="text/javascript" src="renderer.js"></script>
+        <script type="text/javascript" src="scenegraph.js"></script>
+        <script type="text/javascript" src="mathExtras.js"></script>
         <script type="text/javascript">
             function start() {
                 var canvas = document.getElementById("glcanvas");
                 initGL(canvas);
+				createSquareMesh(1.0, true);
             }
         </script>
 		<script id="shader-fs" type="x-shader/x-fragment">
