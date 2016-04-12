@@ -26,7 +26,7 @@ Mesh.prototype = {
 	vertexBuffer : null,
 	indexBuffer : null,
 	_packArrays : function() {
-		alert(this.vertices.length);
+		alert(JSON.stringify(this.vertices[0]));
 		for (var vidx = 0; vidx < this.vertices.length; ++vidx) {
 			var v = this.vertices[vidx];
 			this._vertices += v.position.elements;
@@ -76,12 +76,20 @@ Mesh.prototype = {
 			gl.bufferData(gl.INDEX_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
 	},
-	_drawMesh : function() {
+	_setUniforms : function() {
+		
+	},
+	_setAttributes : function() {
+		
+	},
+	_drawMesh : function(material) {
+		// TODO ideally you want to batch the draw calls based on the material (shader) being used
 		this._packArrays();
 		this._setBufferData();
 		this._bindBuffers();
 		this._setUniforms();
 		this._setAttributes();
+		material.
 	}
 };
 
@@ -104,7 +112,7 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 	omesh.vertices.push(vc);
 	
 	var f1 = new Face(), f2 = new Face();
-	f1.indices.elements = [0, 1, 2];
+	f1.indices.setElements([0, 1, 2]);
 	f1.normal = faceNorm; 
 	omesh.faces.push(f1);
 	
@@ -121,7 +129,7 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 		omesh.vertices.push(vf);
 		
 		var f2 = new Face();
-		f2.indices.elements = [3, 4, 5];
+		f2.indices.setElements([3, 4, 5]);
 		f2.normal = faceNorm.multiply(-1);
 		omesh.faces.push(f2);
 	}
@@ -137,8 +145,8 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 	var omesh2 = createSingleTriangleMesh(c, d, a, twosided);
 	
 	var omesh = new Mesh();
-	omesh.vertices = omesh1.vertices + omesh2.vertices;
-	omesh.faces = omesh1.vertices + omesh2.vertices;
+	omesh.vertices = omesh1.vertices.concat(omesh2.vertices);
+	omesh.faces = omesh1.faces.concat(omesh2.faces);
 	
 	omesh._packArrays();
 	

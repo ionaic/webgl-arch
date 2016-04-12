@@ -26,8 +26,8 @@ function initGL(canvas) {
 }
 
 function initShaders() {
-    var fragmentShader = getShader(gl, "shader-fs");
-    var vertexShader = getShader(gl, "shader-vs");
+    var fragmentShader = getShaderFromDOM(gl, "shader-fs");
+    var vertexShader = getShaderFromDOM(gl, "shader-vs");
 
     shaderProgram = gl.createProgram();
     gl.attachShader(shaderProgram, vertexShader);
@@ -44,46 +44,40 @@ function initShaders() {
     gl.enableVertexAttribArray(vertexPositionAttribute);
 }
 
-function getShader(gl, id) {
-    var shaderScript, theSource, currentChild, shader;
+function getSourceFromDOM(id) {
+	// adapted from a mozilla example, modified to only grab source and return it
+	 var shaderScript, shaderSource, currentChild;
 
-    shaderScript = document.getElementById(id);
+	shaderScript = document.getElementById(id);
 
-    if (!shaderScript) {
-    return null;
-    }
+	if (!shaderScript) {
+		return null;
+	}
 
-    theSource = "";
-    currentChild = shaderScript.firstChild;
+	shaderSource = "";
+	currentChild = shaderScript.firstChild;
 
-    while(currentChild) {
-        if (currentChild.nodeType == currentChild.TEXT_NODE) {
-          theSource += currentChild.textContent;
-        }
+	while(currentChild) {
+		if (currentChild.nodeType == currentChild.TEXT_NODE) {
+		  theSource += currentChild.textContent;
+		}
 
-        currentChild = currentChild.nextSibling;
-        if (shaderScript.type == "x-shader/x-fragment") {
-            shader = gl.createShader(gl.FRAGMENT_SHADER);
-        } 
-        else if (shaderScript.type == "x-shader/x-vertex") {
-            shader = gl.createShader(gl.VERTEX_SHADER);
-        } 
-        else {
-            // Unknown shader type
-            return null;
-        }
+		currentChild = currentChild.nextSibling;
+	}
+	return shaderSource;
+}
 
-        gl.shaderSource(shader, theSource);
-    
-        // Compile the shader program
-        gl.compileShader(shader);  
+function LogError(message) {
+	alert(message);
+}
 
-        // See if it compiled successfully
-        if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {  
-          alert("An error occurred compiling the shaders: " + gl.getShaderInfoLog(shader));  
-          return null;  
-        }
+function shaderCompileCheckErr(shader) {
+	// Compile the shader program
+	gl.compileShader(shader);  
 
-        return shader;
-    }
+	// See if it compiled successfully
+	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
+		LogError("Shader compilation failed.\n" + gl.getShaderInfoLog(shader));  
+		return null;  
+	}
 }

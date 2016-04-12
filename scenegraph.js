@@ -8,7 +8,8 @@ SceneObject.prototype = {
 	components : {
 		mesh : new Mesh(),
 		transform : new Transform(),
-		material : new Material()
+		material : new Material(),
+		userdef : [],
 	},
 	draw : function() {
 		// call draw function recursively through the tree
