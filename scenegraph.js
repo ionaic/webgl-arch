@@ -1,42 +1,43 @@
+// constructor declaration/definitions
 function SceneObject(inName, inMesh, inMaterial, inParent) {
 	LogError("In Constructor for SceneObject");
-		if (inName != null) {
-			this.name = inName;
-		}
-		else {
-			this.name = "SceneObject";
-		}
-		
-		if (inMesh != null) {
-			this.mesh = inMesh;
-		}
-		else {
-			this.mesh = new Mesh();
-		}
-		
-		if (inMaterial != null) {
-			this.material = inMaterial;
-		}
-		else {
-			this.material = new Material();
-		}
-		
-		if (inParent != null) {
-			this.parent = inParent;
-		}
-		else {
-			this.parent = null;
-		}
-		
-		this.updateMaterial();
+	if (inName != null) {
+		this.name = inName;
+	}
+	else {
+		this.name = "SceneObject";
+	}
+	
+	if (inMesh != null) {
+		this.mesh = inMesh;
+	}
+	else {
+		this.mesh = new Mesh();
+	}
+	
+	if (inMaterial != null) {
+		this.material = inMaterial;
+	}
+	else {
+		this.material = new Material();
+	}
+	
+	LogError("Material: " + JSON.stringify(this.material));
+	
+	if (inParent != null) {
+		this.parent = inParent;
+	}
+	else {
+		this.parent = null;
+	}
+	
+	this.updateMaterial();
+	LogError("String: " + JSON.stringify(this));
 }
 function Transform() {}
 function Camera() {}
 
 SceneObject.prototype = {
-	constructor : function (inName, inMesh, inMaterial, inParent) {
-		
-	},
 	name : "SceneObject",
 	parent : null,
 	children : [],
@@ -50,12 +51,16 @@ SceneObject.prototype = {
 		// set the uniforms for the mvp matrices
 	},
 	updateMaterial : function() {
-		this.material.setMeshAttributes(this.mesh);
+		this.material.initShaders(this.mesh);
 	},
 	draw : function() {
 		// call draw function recursively through the tree
-		for (var child in children) {
-			child.draw();
+		LogError("Drawing SceneObject " + this.name + ": " + JSON.stringify(this));
+		if (this.children && this.children.length > 0) {
+			for (var child in this.children) {
+				LogError("Child of " + this.name + ": " + JSON.stringify(child));
+				child.draw();
+			}
 		}
 		this.mesh._drawMesh();
 	},

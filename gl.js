@@ -61,7 +61,7 @@ function getSourceFromDOM(id) {
 
 	while(currentChild) {
 		if (currentChild.nodeType == currentChild.TEXT_NODE) {
-		  theSource += currentChild.textContent;
+		  shaderSource += currentChild.textContent;
 		}
 
 		currentChild = currentChild.nextSibling;

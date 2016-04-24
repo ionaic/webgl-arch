@@ -1,5 +1,28 @@
-function Material() {}
-function Shader() {}
+function Material(inShaders, inTextures) {
+	if (inShaders != null) {
+		this.shaders = inShaders;
+	}
+	else {
+		this.shaders = [];
+	}
+	if (inTextures != null) {
+		this.textures = inTextures;
+	}
+	else {
+		this.textures = [];
+	}
+}
+function Shader(inName, inVertName, inFragName) {
+	this.name = inName;
+	this.vertexName = inVertName;
+	this.fragmentName = inFragName;
+	this.vertexAttributes = {
+		position : new VertexAttribute("position"),
+		normal : new VertexAttribute("normal"),
+		uv : new VertexAttribute("uv")
+	};
+	this.initShader();
+}
 function VertexAttribute() {}
 function ShaderUniform() {}
 function Texture() {}
@@ -45,7 +68,7 @@ Shader.prototype = {
 		this.uniforms[name] = new VertexAttribute();
 		this.uniforms[name].name = name;
 	},
-	initShaders : function() {
+	initShader : function() {
 		this.program = gl.createProgram();
 		
 		if (this.fragmentName != null) {
@@ -64,7 +87,7 @@ Shader.prototype = {
 		}
 		
 		gl.linkProgram(this.program);
-		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+		if (!gl.getProgramParameter(this.program, gl.LINK_STATUS)) {
 			LogError("Link for shader program " + this.name + " failed.\n" + gl.getProgramInfoLog(this.program));
 		}
 	},
@@ -111,14 +134,17 @@ Shader.prototype = {
 
 Material.prototype = {
 	shaders : [],
-	texture : new Texture(),
+	textures : [],
+	addShader : function(inShaderName, inVertName, inFragName) {
+		this.shaders.push(new Shader(inShaderName, inVertName, inFragName));
+	},
 	initShaders : function (meshobj) {
-		for (var idx = 0; idx < shaders.length; ++idx) {
-			shaders[idx].initShaders();
-			shaders[idx].setMeshAttributes(meshobj);
+		for (var idx = 0; idx < this.shaders.length; ++idx) {
+			this.shaders[idx].initShader();
+			this.shaders[idx].setMeshAttributes(meshobj);
 		}
 	},
 	draw : function() {
 		
-	}
+	},
 }

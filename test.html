@@ -20,11 +20,11 @@
 				multMatrix(Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4());
 			}
 
-			function setMatrixUniforms(shaderProgram) {
-				var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+			function setMatrixUniforms(shader) {
+				var pUniform = gl.getUniformLocation(shader.program, "uPMatrix");
 				gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.flatten()));
 
-				var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+				var mvUniform = gl.getUniformLocation(shader.program, "uMVMatrix");
 				gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.flatten()));
 			}
 		</script>
@@ -37,9 +37,12 @@
 				
 				var Scene = new SceneObject();
 				Scene.name = "Scene";
+				LogError("Scene element " + Scene.name + ": " + JSON.stringify(Scene));
 				
 				var testSquare = new SceneObject("Square", createSquareMesh(1.0, true));
+				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
 				Scene.addChild(testSquare);
+				LogError("Test square: " + JSON.stringify(testSquare));
 				
 				perspectiveMatrix = makePerspective(45, 640.0/480.0, 0.1, 100.0);
   
