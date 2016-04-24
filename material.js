@@ -2,18 +2,26 @@ function Material() {}
 function Shader() {}
 function VertexAttribute() {}
 function ShaderUniform() {}
+function Texture() {}
 
 VertexAttribute.prototype = {
+	constructor : function(attrName) {
+		this.name = name;
+	},
 	name : "",
 	varLocation : null,
-	varValue : null,
+	varBuffer : null,
+	varType : gl.FLOAT, // default to float3s
+	varNumber : 3,
 }
 
 ShaderUniform.prototype = {
 	name : "",
 	varLocation : null,
 	varValue : null,
-	varType : null,
+	varType : gl.FLOAT, // default to float
+	varNumber : 3, // default to 3 vec
+	isMatrix : false, // boolean to determine if this is a matrix or not
 }
 
 Shader.prototype = {
@@ -23,7 +31,11 @@ Shader.prototype = {
 	vertex : null,
 	vertexName : "",
 	fragmentName : "",
-	vertexAttributes : {},
+	vertexAttributes : {
+		position : new VertexAttribute("position"),
+		normal : new VertexAttribute("normal"),
+		uv : new VertexAttribute("uv"),
+	},
 	uniforms : {},
 	addVertexAttribute : function(name) {
 		this.vertexAttributes[name] = new VertexAttribute();
@@ -36,14 +48,14 @@ Shader.prototype = {
 	initShaders : function() {
 		this.program = gl.createProgram();
 		
-		if (this.fragmentName !== null) {
+		if (this.fragmentName != null) {
 			this.fragment = gl.createShader(gl.FRAGMENT_SHADER);
 			gl.shaderSource(this.fragment, getSourceFromDOM(this.fragmentName));
 			shaderCompileCheckErr(this.fragment);
 			
 			gl.attachShader(this.program, this.fragment);
 		}
-		if (this.vertexName !== null) {
+		if (this.vertexName != null) {
 			this.vertex = gl.createShader(gl.VERTEX_SHADER);
 			gl.shaderSource(this.vertex, getSourceFromDOM(this.vertexName));
 			shaderCompileCheckErr(this.vertex);
@@ -59,38 +71,54 @@ Shader.prototype = {
 	_parseVariables : function () {
 		// automatically parse the shader source to grab all the uniforms and attributes
 	},
-	useAttributes : function() {
-		foreach (var va in this.vertexAttributes) {
-			gl.enableVertexAttribArray(va.varLocation);
+	setMeshAttributes : function(meshobj) {
+		// set the position/normal/uv attributes for a mesh
+		this.getAttributeLocations();
+		
+		this.vertexAttributes.position.varBuffer = meshobj.vertexBuffer;
+		this.vertexAttributes.position.varType = gl.FLOAT;
+		this.vertexAttributes.position.varNumber = 4;
+		
+		this.vertexAttributes.normal.varBuffer = meshobj.normalBuffer;
+		this.vertexAttributes.normal.varType = gl.FLOAT;
+		this.vertexAttributes.normal.varNumber = 3;
+		
+		this.vertexAttributes.uv.varBuffer = meshobj.uvBuffer;
+		this.vertexAttributes.uv.varType = gl.FLOAT;
+		this.vertexAttributes.uv.varNumber = 2;
+	},
+	getAttributeLocations : function() {
+		for (var attr in this.vertexAttributes) {
+			attr.varLocation = gl.getAttributeLocation(this.program, attr.name);
 		}
-		foreach (var fa in this.fragmentAttributes) {
-			gl.enableVertexAttribArray(fa.varLocation);
+	},
+	useAttributes : function() {
+		for (var va in this.vertexAttributes) {
+			gl.enableVertexAttribArray(va.varLocation);
 		}
 	},
 	useMaterial : function() {
 		gl.useProgram(shaderProgram);
-		gl.enableVertexAttribArray(vertexPositionAttribute);
+		for (var attr in this.vertexAttributes) {		
+			gl.enableVertexAttribArray(attr.varLocation);
+			gl.bindBuffer(gl.ARRAY_BUFFER, attr.varBuffer);
+			// because i always forget what order the parameters go:
+			// vertexAttribPointer(GLint attrib location, GLint size, type, normalized?, stride, offset)
+			gl.vertexAttribPointer(attr.varLocation, attr.varNumber, attr.varType, false, 0, 0);
+		}
 	},
 }
 
 Material.prototype = {
 	shaders : [],
-	initShaders : function () {
-		var fragmentShader = getShader(gl, "shader-fs");
-		var vertexShader = getShader(gl, "shader-vs");
-
-		shaderProgram = gl.createProgram();
-		gl.attachShader(shaderProgram, vertexShader);
-		gl.attachShader(shaderProgram, fragmentShader);
-		gl.linkProgram(shaderProgram);
-
-		if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-			alert("Unable to initialize the shader program.");
+	texture : new Texture(),
+	initShaders : function (meshobj) {
+		for (var idx = 0; idx < shaders.length; ++idx) {
+			shaders[idx].initShaders();
+			shaders[idx].setMeshAttributes(meshobj);
 		}
+	},
+	draw : function() {
 		
-		gl.useProgram(shaderProgram);
-
-		vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-		gl.enableVertexAttribArray(vertexPositionAttribute);
 	}
 }

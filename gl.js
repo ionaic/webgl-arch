@@ -1,4 +1,6 @@
-var gl;
+var gl = {};
+
+var LogElement;
 
 function initGL(canvas) {
     gl = null;
@@ -68,7 +70,15 @@ function getSourceFromDOM(id) {
 }
 
 function LogError(message) {
-	alert(message);
+	if (LogElement != null) {
+		var text = document.createTextNode(message);
+		var par = document.createElement('p');
+		par.appendChild(text);
+		LogElement.appendChild(par);
+	}
+	else {
+		alert(message);
+	}
 }
 
 function shaderCompileCheckErr(shader) {
@@ -80,4 +90,9 @@ function shaderCompileCheckErr(shader) {
 		LogError("Shader compilation failed.\n" + gl.getShaderInfoLog(shader));  
 		return null;  
 	}
+}
+
+function checkGLError(message) {
+	// TODO function for checking gl errors along the way
+	// message is meant for telling you what operation was being performed
 }

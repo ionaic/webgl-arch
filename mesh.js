@@ -24,9 +24,10 @@ Mesh.prototype = {
 	faces : [],
 	// gl buffers
 	vertexBuffer : null,
+	normalBuffer : null,
+	uvBuffer : null,
 	indexBuffer : null,
 	_packArrays : function() {
-		alert(JSON.stringify(this.vertices[0]));
 		for (var vidx = 0; vidx < this.vertices.length; ++vidx) {
 			var v = this.vertices[vidx];
 			this._vertices += v.position.elements;
@@ -38,15 +39,20 @@ Mesh.prototype = {
 		}
 	},
 	initBuffers : function() {
-		
-		if (!this.vertexBuffer) {
+		if (this.vertexBuffer != null) {
 			this.vertexBuffer = gl.createBuffer();		
 		}
-		if (!this.indexBuffer) {
+		if (this.indexBuffer != null) {
 			this.indexBuffer = gl.createBuffer();		
 		}
+		if (this.normalBuffer != null) {
+			this.normalBuffer = gl.createBuffer();
+		}
+		if (this.uvBuffer != null) {
+			this.uvBuffer = gl.createBuffer();
+		}
 		
-		if (!(this.vertices || this._vertices)) {
+		if (this.vertices == null || this._vertices == null) {
 			return;
 		}
 		this._setBufferData();
@@ -54,7 +60,9 @@ Mesh.prototype = {
 	_bindBuffers : function() {
 		// bind buffers to this mesh's index/vertex buffers
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-		gl.bindBuffer(gl.INDEX_BUFFER, this.indexBuffer);
+		// gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+		// gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 	},
 	updateBuffers : function() {
 		// TODO properly updating buffer data in opengl, how do
@@ -65,31 +73,34 @@ Mesh.prototype = {
 		// first pack the index/vertex arrays into the typed arrays
 		this._packArrays();
 		
-		// bind our mesh buffers
+		// bind our mesh buffers, only does position and index
 		this._bindBuffers();
 		
 		// we MUST have vertices, optional indices
 		gl.bufferData(gl.ARRAY_BUFFER, this._vertices, gl.STATIC_DRAW);
+		if (this._normals != null) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, this._normals, gl.STATIC_DRAW);
+		}
+		if (this._uv != null) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, this._uv, gl.STATIC_DRAW);
+		}
 
-		if (this._indices || this.faces) {	
-			
+		if (this._indices!= null) {	
 			gl.bufferData(gl.INDEX_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
 	},
-	_setUniforms : function() {
-		
-	},
-	_setAttributes : function() {
-		
-	},
 	_drawMesh : function(material) {
+		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
 		this._packArrays();
 		this._setBufferData();
 		this._bindBuffers();
-		this._setUniforms();
-		this._setAttributes();
-		material.
+		material.setUniforms();
+		material.setAttributes();
+		material.useMaterial();
+		gl.drawArrays(gl.TRIANGLES, this.vertices.length, gl.UNSIGNED_SHORT, 0);
 	}
 };
 

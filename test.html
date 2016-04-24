@@ -6,11 +6,50 @@
         <script type="text/javascript" src="material.js"></script>
         <script type="text/javascript" src="scenegraph.js"></script>
         <script type="text/javascript" src="mathextras.js"></script>
+		<script type="text/javascript" src="glUtil.js"></script>
+		<script type="text/javascript">
+			function loadIdentity() {
+				mvMatrix = Matrix.I(4);
+			}
+
+			function multMatrix(m) {
+				mvMatrix = mvMatrix.x(m);
+			}
+
+			function mvTranslate(v) {
+				multMatrix(Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4());
+			}
+
+			function setMatrixUniforms(shaderProgram) {
+				var pUniform = gl.getUniformLocation(shaderProgram, "uPMatrix");
+				gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.flatten()));
+
+				var mvUniform = gl.getUniformLocation(shaderProgram, "uMVMatrix");
+				gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.flatten()));
+			}
+		</script>
         <script type="text/javascript">
             function start() {
                 var canvas = document.getElementById("glcanvas");
+				LogElement = document.getElementById("err_log");
+				
                 initGL(canvas);
-				createSquareMesh(1.0, true);
+				
+				var Scene = new SceneObject();
+				Scene.name = "Scene";
+				
+				var testSquare = new SceneObject("Square", createSquareMesh(1.0, true));
+				Scene.addChild(testSquare);
+				
+				perspectiveMatrix = makePerspective(45, 640.0/480.0, 0.1, 100.0);
+  
+				loadIdentity();
+				mvTranslate([-0.0, 0.0, -6.0]);
+				
+				LogError(JSON.stringify(testSquare));
+				setMatrixUniforms(testSquare.material.shaders[0]);
+				
+				Scene.draw();
             }
         </script>
 		<script id="shader-fs" type="x-shader/x-fragment">
@@ -19,13 +58,13 @@
 			}
 		</script>
 		<script id="shader-vs" type="x-shader/x-vertex">
-			attribute vec3 aVertexPosition;
+			attribute vec3 position;
 
 			uniform mat4 uMVMatrix;
 			uniform mat4 uPMatrix;
 
 			void main(void) {
-				gl_Position = uPMatrix * uMVMatrix * vec4(aVertexPosition, 1.0);
+				gl_Position = uPMatrix * uMVMatrix * vec4(position, 1.0);
 			}
 		</script>
     </head>
@@ -33,5 +72,6 @@
         <canvas id="glcanvas" width="640" height="480">
             Browser does not support the <code>&lt;canvas&gt;</code> element.
         </canvas>
+		<div id="err_log"></div>
     </body>
 </html>
