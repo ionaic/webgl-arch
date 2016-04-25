@@ -21,6 +21,7 @@
 			}
 
 			function setMatrixUniforms(shader) {
+				gl.useProgram(shader.program);
 				var pUniform = gl.getUniformLocation(shader.program, "uPMatrix");
 				gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.flatten()));
 

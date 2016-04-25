@@ -56,16 +56,19 @@ SceneObject.prototype = {
 	draw : function() {
 		// call draw function recursively through the tree
 		LogError("Drawing SceneObject " + this.name + ": " + JSON.stringify(this));
-		if (this.children && this.children.length > 0) {
-			for (var child in this.children) {
-				LogError("Child of " + this.name + ": " + JSON.stringify(child));
-				child.draw();
+		if (this.children != null && this.children.length > 0) {
+			LogError("Children: " + JSON.stringify(this.children));
+			for (var idx = 0; idx < this.children.length; ++idx) {
+				// LogError("Child of " + this.name + ": " + JSON.stringify(this.children[idx]));
+				// this.children[idx].draw();
 			}
 		}
 		this.mesh._drawMesh();
 	},
 	addChild : function(childobj) {
+		childobj.parent = this;
 		this.children.push(childobj);
+		// this.children[this.children.length-1].parent = this;
 	},
 	addComponent : function(component) {
 	}
