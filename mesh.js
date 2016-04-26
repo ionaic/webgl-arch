@@ -1,6 +1,8 @@
 function Vertex() {}
 function Face() {}
-function Mesh() {}
+function Mesh() {
+	this.initBuffers();
+}
 
 Vertex.prototype = {
 	position : $V([0, 0, 0, 1]),
@@ -39,16 +41,16 @@ Mesh.prototype = {
 		}
 	},
 	initBuffers : function() {
-		if (this.vertexBuffer != null) {
+		if (this.vertexBuffer == null) {
 			this.vertexBuffer = gl.createBuffer();		
 		}
-		if (this.indexBuffer != null) {
+		if (this.indexBuffer == null) {
 			this.indexBuffer = gl.createBuffer();		
 		}
-		if (this.normalBuffer != null) {
+		if (this.normalBuffer == null) {
 			this.normalBuffer = gl.createBuffer();
 		}
-		if (this.uvBuffer != null) {
+		if (this.uvBuffer == null) {
 			this.uvBuffer = gl.createBuffer();
 		}
 		
@@ -87,6 +89,7 @@ Mesh.prototype = {
 			gl.bufferData(gl.ARRAY_BUFFER, this._uv, gl.STATIC_DRAW);
 		}
 
+		// INDEX_BUFFER should still be bound to our index buffer, though ARRAY_BUFFER is now bound to the uv or normals potentially
 		if (this._indices!= null) {	
 			gl.bufferData(gl.INDEX_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
@@ -97,9 +100,11 @@ Mesh.prototype = {
 		this._packArrays();
 		this._setBufferData();
 		this._bindBuffers();
-		material.setUniforms();
-		material.setAttributes();
-		material.useMaterial();
+		if (material) {
+			material.setUniforms();
+			material.setAttributes();
+			material.useMaterial();
+		}
 		gl.drawArrays(gl.TRIANGLES, this.vertices.length, gl.UNSIGNED_SHORT, 0);
 	}
 };
