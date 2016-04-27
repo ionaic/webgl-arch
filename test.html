@@ -38,7 +38,6 @@
 				
 				var Scene = new SceneObject();
 				Scene.name = "Scene";
-				LogError("Scene element " + Scene.name + ": " + JSON.stringify(Scene));
 				
 				var testSquare = new SceneObject("Square", createSquareMesh(1.0, true));
 				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
@@ -50,7 +49,6 @@
 				loadIdentity();
 				mvTranslate([-0.0, 0.0, -6.0]);
 				
-				LogError(JSON.stringify(testSquare));
 				setMatrixUniforms(testSquare.material.shaders[0]);
 				
 				Scene.draw();

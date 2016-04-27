@@ -1,6 +1,5 @@
 // constructor declaration/definitions
 function SceneObject(inName, inMesh, inMaterial, inParent) {
-	LogError("In Constructor for SceneObject");
 	if (inName != null) {
 		this.name = inName;
 	}
@@ -22,8 +21,6 @@ function SceneObject(inName, inMesh, inMaterial, inParent) {
 		this.material = new Material();
 	}
 	
-	LogError("Material: " + JSON.stringify(this.material));
-	
 	if (inParent != null) {
 		this.parent = inParent;
 	}
@@ -31,8 +28,9 @@ function SceneObject(inName, inMesh, inMaterial, inParent) {
 		this.parent = null;
 	}
 	
+	this.children = [];
+	
 	this.updateMaterial();
-	LogError("String: " + JSON.stringify(this));
 }
 function Transform() {}
 function Camera() {}
@@ -59,16 +57,15 @@ SceneObject.prototype = {
 		if (this.children != null && this.children.length > 0) {
 			LogError("Children: " + JSON.stringify(this.children));
 			for (var idx = 0; idx < this.children.length; ++idx) {
-				// LogError("Child of " + this.name + ": " + JSON.stringify(this.children[idx]));
-				// this.children[idx].draw();
+				LogError("Child of " + this.name + " (" + (idx + 1) + "/" + this.children.length + "): " + JSON.stringify(this.children[idx]));
+				this.children[idx].draw();
 			}
 		}
 		this.mesh._drawMesh();
 	},
 	addChild : function(childobj) {
-		childobj.parent = this;
+		// childobj.parent = this;
 		this.children.push(childobj);
-		// this.children[this.children.length-1].parent = this;
 	},
 	addComponent : function(component) {
 	}
@@ -82,9 +79,9 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 });
 
 Transform.prototype = {
-	position : $V(),
+	position : $V([0,0,0,0]),
 	rotation : $V([0,0,0,0]),
-	scale : $V(),
+	scale : 1.0,
 	getEulerAngles : function() {
 		// quaternion to euler
 	},

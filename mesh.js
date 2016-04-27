@@ -1,8 +1,6 @@
 function Vertex() {}
 function Face() {}
-function Mesh() {
-	this.initBuffers();
-}
+function Mesh() {}
 
 Vertex.prototype = {
 	position : $V([0, 0, 0, 1]),
@@ -97,6 +95,10 @@ Mesh.prototype = {
 	_drawMesh : function(material) {
 		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
+		LogError("Drawing Mesh");
+		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
+			return;
+		}
 		this._packArrays();
 		this._setBufferData();
 		this._bindBuffers();
@@ -175,24 +177,35 @@ function createSquareMesh(dim, normal, twosided=true) {
 									 [-1.0 * dim, dim, 0.0], // 
 									 [dim, -1.0 * dim, 0.0], //
 									 [-1.0 * dim, -1.0 * dim, 0.0], twosided);
+	return omesh;
 }
 
 function createRectangleMesh(l, w, normal, twosided=true, ccw=true) {
+	var omesh;
 	
+	return omesh;
 }
 
 function createCircleMesh(center, radius, normal, twosided=true, ccw=true) {
+	var omesh;
 	
+	return omesh;
 }
 
 function createCubeMesh(dim, twosided=true, ccw=true) {
+	var omesh;
 	
+	return omesh;
 }
 
 function createBoxMesh(l, w, h, twosided=true, ccw=true) {
+	var omesh;
 	
+	return omesh;
 }
 
 function createSphereMesh(dim) {
+	var omesh;
 	
+	return omesh;
 }
