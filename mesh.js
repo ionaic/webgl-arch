@@ -28,15 +28,23 @@ Mesh.prototype = {
 	uvBuffer : null,
 	indexBuffer : null,
 	_packArrays : function() {
+		var tmpVerts = [];
+		var tmpNormals = [];
+		var tmpUV = [];
+		var tmpIndices = [];
 		for (var vidx = 0; vidx < this.vertices.length; ++vidx) {
 			var v = this.vertices[vidx];
-			this._vertices += v.position.elements;
-			this._normals += v.normal.elements;
-			this._uv += v.uv.elements;
+			tmpVerts.concat(v.position.elements);
+			tmpNormals.concat(v.normal.elements);
+			tmpUV.concat(v.uv.elements);
 		}
 		for (var idx = 0; idx < this.faces.length; ++idx) {
-			this._indices += this.faces[idx].indices.elements;
+			tmpIndices.concat(this.faces[idx].indices.elements);
 		}
+		this._vertices = Float32Array.from(tmpVerts);
+		this._normals = Float32Array.from(tmpNormals);
+		this._uv = Float32Array.from(tmpUV);
+		this._indices = Uint32Array.from(tmpIndices);
 	},
 	initBuffers : function() {
 		if (this.vertexBuffer == null) {
