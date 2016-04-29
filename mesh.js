@@ -41,6 +41,10 @@ Mesh.prototype = {
 		for (var idx = 0; idx < this.faces.length; ++idx) {
 			tmpIndices.concat(this.faces[idx].indices.elements);
 		}
+		LogError(tmpVerts.toString());
+		LogError(tmpNormals.toString());
+		LogError(tmpUV.toString());
+		LogError(tmpIndices.toString());
 		this._vertices = Float32Array.from(tmpVerts);
 		this._normals = Float32Array.from(tmpNormals);
 		this._uv = Float32Array.from(tmpUV);
