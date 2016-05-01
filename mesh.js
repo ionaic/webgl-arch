@@ -34,17 +34,13 @@ Mesh.prototype = {
 		var tmpIndices = [];
 		for (var vidx = 0; vidx < this.vertices.length; ++vidx) {
 			var v = this.vertices[vidx];
-			tmpVerts.concat(v.position.elements);
-			tmpNormals.concat(v.normal.elements);
-			tmpUV.concat(v.uv.elements);
+			tmpVerts = tmpVerts.concat(v.position.elements);
+			tmpNormals = tmpNormals.concat(v.normal.elements);
+			tmpUV = tmpUV.concat(v.uv.elements);
 		}
 		for (var idx = 0; idx < this.faces.length; ++idx) {
-			tmpIndices.concat(this.faces[idx].indices.elements);
+			tmpIndices = tmpIndices.concat(this.faces[idx].indices.elements);
 		}
-		LogError(tmpVerts.toString());
-		LogError(tmpNormals.toString());
-		LogError(tmpUV.toString());
-		LogError(tmpIndices.toString());
 		this._vertices = Float32Array.from(tmpVerts);
 		this._normals = Float32Array.from(tmpNormals);
 		this._uv = Float32Array.from(tmpUV);
