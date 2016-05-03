@@ -1,32 +1,29 @@
-function Vertex() {}
-function Face() {}
-function Mesh() {}
-
-Vertex.prototype = {
-	position : $V([0, 0, 0, 1]),
-	normal : $V([0, 0, 0]),
-	uv : $V([0, 0])
-};
-
-Face.prototype = {
-	indices : $V([0, 0, 0]),
-	normal : $V([0, 0, 0])
+function Vertex() {
+	this.position = $V([0, 0, 0, 1]);
+	this.normal = $V([0, 0, 0]);
+	this.uv = $V([0, 0]);
+}
+function Face() {
+	this.indices = $V([0, 0, 0]);
+	this.normal = $V([0, 0, 0]);
+}
+function Mesh() {
+	// internal arrays, less org than external facing arrays
+	this._vertices = new Float32Array();
+	this._indices = new Uint32Array();
+	this._normals = new Float32Array();
+	this._uv = new Float32Array();
+	// user friendly vertex/index arrays
+	this.vertices = [];
+	this.faces = [];
+	// gl buffers
+	this.vertexBuffer = null;
+	this.normalBuffer = null;
+	this.uvBuffer = null;
+	this.indexBuffer = null;
 }
 
 Mesh.prototype = {
-	// internal arrays, less org than external facing arrays
-	_vertices : new Float32Array(),
-	_indices : new Uint32Array(),
-	_normals : new Float32Array(),
-	_uv : new Float32Array(),
-	// user friendly vertex/index arrays
-	vertices : [],
-	faces : [],
-	// gl buffers
-	vertexBuffer : null,
-	normalBuffer : null,
-	uvBuffer : null,
-	indexBuffer : null,
 	_packArrays : function() {
 		var tmpVerts = [];
 		var tmpNormals = [];
@@ -45,6 +42,8 @@ Mesh.prototype = {
 		this._normals = Float32Array.from(tmpNormals);
 		this._uv = Float32Array.from(tmpUV);
 		this._indices = Uint32Array.from(tmpIndices);
+		LogError(tmpVerts);
+		LogError(tmpIndices);
 	},
 	initBuffers : function() {
 		if (this.vertexBuffer == null) {
@@ -163,12 +162,24 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 	omesh._packArrays();
 	omesh.initBuffers;
 	
+	LogError("Generated Tri: " + JSON.stringify(omesh));
+	
 	return omesh;
 }
 
 function createSingleQuadMesh(a, b, c, d, twosided=true) {
 	var omesh1 = createSingleTriangleMesh(a, b, c, twosided);
 	var omesh2 = createSingleTriangleMesh(c, d, a, twosided);
+	
+	// increase the index values to concat properly the two meshes
+	for (var idx = 0; idx < omesh2.faces.length; ++idx) {
+		omesh2.faces[idx].indices.setElements(omesh2.faces[idx].indices.add($V[omesh1.vertices.length, omesh1.vertices.length, omesh1.vertices.length]));
+	}
+	
+	LogError("A: " + JSON.stringify(a) + "\nB: " + JSON.stringify(b) + "\nC: " + JSON.stringify(c) + "\nD: " + JSON.stringify(d));
+	
+	LogError("Omesh1: " + JSON.stringify(omesh1));
+	LogError("Omesh2: " + JSON.stringify(omesh2));
 	
 	var omesh = new Mesh();
 	omesh.vertices = omesh1.vertices.concat(omesh2.vertices);
@@ -183,8 +194,8 @@ function createSquareMesh(dim, normal, twosided=true) {
 	// TODO transform so that the normal points in the correct direction
 	var omesh = createSingleQuadMesh([dim, dim, 0.0], // 
 									 [-1.0 * dim, dim, 0.0], // 
-									 [dim, -1.0 * dim, 0.0], //
-									 [-1.0 * dim, -1.0 * dim, 0.0], twosided);
+									 [-1.0 * dim, -1.0 * dim, 0.0], //
+									 [dim, -1.0 * dim, 0.0], twosided);
 	return omesh;
 }
 

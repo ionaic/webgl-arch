@@ -13,53 +13,59 @@ function Material(inShaders, inTextures) {
 	}
 }
 function Shader(inName, inVertName, inFragName) {
-	this.name = inName;
-	this.vertexName = inVertName;
-	this.fragmentName = inFragName;
+	if (inName != null) {
+		this.name = inName;
+	}
+	else {
+		this.name = "";
+	}
+	if (inVertName != null) {
+		this.vertexName = inVertName;
+	}
+	else {
+		this.vertexName = "";
+	}
+	if (inFragName != null) {
+		this.fragmentName = inFragName;
+	}
+	else {
+		this.fragmentName = "";
+	}
 	this.vertexAttributes = {
 		position : new VertexAttribute("position"),
 		normal : new VertexAttribute("normal"),
 		uv : new VertexAttribute("uv")
 	};
+	this.program = null;
+	this.fragment = null;
+	this.vertex = null;
+	this.uniforms = {};
 	this.initShader();
 }
-function VertexAttribute() {}
-function ShaderUniform() {}
+function VertexAttribute(inName) {
+	if (inName != null) {
+		this.name = inName
+	}
+	else {
+		name = "";
+	}
+	this.varLocation = null;
+	this.varBuffer = null;
+	this.varType = gl.FLOAT; // default to float3s
+	this.varNumber = 3;
+}
 function Texture() {}
 
-VertexAttribute.prototype = {
-	constructor : function(attrName) {
-		this.name = name;
-	},
-	name : "",
-	varLocation : null,
-	varBuffer : null,
-	varType : gl.FLOAT, // default to float3s
-	varNumber : 3,
-}
-
-ShaderUniform.prototype = {
-	name : "",
-	varLocation : null,
-	varValue : null,
-	varType : gl.FLOAT, // default to float
-	varNumber : 3, // default to 3 vec
-	isMatrix : false, // boolean to determine if this is a matrix or not
+function ShaderUniform() {
+	this.name = "";
+	this.varLocation = null;
+	this.varValue = null;
+	this.varType = gl.FLOAT; // default to float
+	this.varNumber = 3; // default to 3 vec
+	this.isMatrix = false; // boolean to determine if this is a matrix or not
 }
 
 Shader.prototype = {
-	name : "",
-	program : null,
-	fragment : null,
-	vertex : null,
-	vertexName : "",
-	fragmentName : "",
-	vertexAttributes : {
-		position : new VertexAttribute("position"),
-		normal : new VertexAttribute("normal"),
-		uv : new VertexAttribute("uv"),
-	},
-	uniforms : {},
 	addVertexAttribute : function(name) {
 		this.vertexAttributes[name] = new VertexAttribute();
 		this.vertexAttributes[name].name = name;
@@ -133,8 +139,6 @@ Shader.prototype = {
 }
 
 Material.prototype = {
-	shaders : [],
-	textures : [],
 	addShader : function(inShaderName, inVertName, inFragName) {
 		this.shaders.push(new Shader(inShaderName, inVertName, inFragName));
 	},

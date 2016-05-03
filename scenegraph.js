@@ -1,4 +1,14 @@
 // constructor declaration/definitions
+function Transform() {
+	position = $V([0,0,0,0]);
+	rotation = $V([0,0,0,0]);
+	scale = 1.0;
+}
+function Camera() {
+	SceneObject.call(this, "Camera");
+	this.forward = $V([0,0,0]);
+	this.up = $V([0, 1, 0]);
+}
 function SceneObject(inName, inMesh, inMaterial, inParent) {
 	if (inName != null) {
 		this.name = inName;
@@ -30,21 +40,23 @@ function SceneObject(inName, inMesh, inMaterial, inParent) {
 	
 	this.children = [];
 	
-	this.updateMaterial();
-}
-function Transform() {}
-function Camera() {}
-
-SceneObject.prototype = {
-	name : "SceneObject",
-	parent : null,
-	children : [],
-	components : {
+	this.components = {
 		mesh : new Mesh(),
 		transform : new Transform(),
 		material : new Material(),
 		userdef : [],
-	},
+	};
+	
+	this.updateMaterial();
+}
+// TODO is this how this inheritance works in JS?
+// Camera.prototype = Object.create(SceneObject.prototype, {
+	// constructor : function () {},
+	// forward : $V([0,0,0]),
+	// up : $V([0, 1, 0]),
+// });
+
+SceneObject.prototype = {
 	applyTransform : function() {
 		// set the uniforms for the mvp matrices
 	},
@@ -71,17 +83,7 @@ SceneObject.prototype = {
 	}
 };
 
-// TODO is this how this inheritance works in JS?
-Camera.prototype = Object.create(SceneObject.prototype, {
-	constructor : function () {},
-	forward : $V([0,0,0]),
-	up : $V([0, 1, 0]),
-});
-
 Transform.prototype = {
-	position : $V([0,0,0,0]),
-	rotation : $V([0,0,0,0]),
-	scale : 1.0,
 	getEulerAngles : function() {
 		// quaternion to euler
 	},
