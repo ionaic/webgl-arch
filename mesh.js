@@ -42,8 +42,6 @@ Mesh.prototype = {
 		this._normals = Float32Array.from(tmpNormals);
 		this._uv = Float32Array.from(tmpUV);
 		this._indices = Uint32Array.from(tmpIndices);
-		LogError(tmpVerts);
-		LogError(tmpIndices);
 	},
 	initBuffers : function() {
 		if (this.vertexBuffer == null) {
@@ -102,7 +100,7 @@ Mesh.prototype = {
 	_drawMesh : function(material) {
 		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
-		LogError("Drawing Mesh");
+		LogError("Drawing Mesh " + JSON.stringify(this) + "; " + this._vertices.toString() + "; " + this._indices.toString());
 		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
 			return;
 		}
@@ -160,7 +158,7 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 	}
 	
 	omesh._packArrays();
-	omesh.initBuffers;
+	omesh.initBuffers();
 	
 	LogError("Generated Tri: " + JSON.stringify(omesh));
 	
@@ -168,24 +166,49 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 }
 
 function createSingleQuadMesh(a, b, c, d, twosided=true) {
-	var omesh1 = createSingleTriangleMesh(a, b, c, twosided);
-	var omesh2 = createSingleTriangleMesh(c, d, a, twosided);
+	// var omesh1 = createSingleTriangleMesh(a, b, c, twosided);
+	// var omesh2 = createSingleTriangleMesh(c, d, a, twosided);
+	
+	var omesh = createSingleTriangleMesh(a, b, c, twosided);
+	var vd = new Vertex();
+	vd.position = $V(d);
+	vd.normal = omesh.vertices[0].normal;
+	omesh.vertices.push(vd);
+	
+	var f1 = new Face();
+	f1.indices.setElements([0, 2, omesh.vertices.length - 1]);
+	omesh.faces.push(f1);
+	
+	if (twosided) {
+		var vd2 = new Vertex();
+		vd2.position = $V(d);
+		vd2.normal = omesh.vertices[4].normal;
+		omesh.vertices.push(vd2);
+
+		var f2 = new Face();
+		f2.indices.setElements([3, 5, omesh.vertices.length - 1]);
+		omesh.faces.push(f2);
+	}
+	
+	
 	
 	// increase the index values to concat properly the two meshes
-	for (var idx = 0; idx < omesh2.faces.length; ++idx) {
-		omesh2.faces[idx].indices.setElements(omesh2.faces[idx].indices.add($V[omesh1.vertices.length, omesh1.vertices.length, omesh1.vertices.length]));
-	}
+	// for (var idx = 0; idx < omesh2.faces.length; ++idx) {
+		// var tmp = omesh2.faces[idx].indices.add($V([omesh1.vertices.length, omesh1.vertices.length, omesh1.vertices.length]));
+		// omesh2.faces[idx].indices.setElements(tmp);
+	// }
 	
 	LogError("A: " + JSON.stringify(a) + "\nB: " + JSON.stringify(b) + "\nC: " + JSON.stringify(c) + "\nD: " + JSON.stringify(d));
 	
-	LogError("Omesh1: " + JSON.stringify(omesh1));
-	LogError("Omesh2: " + JSON.stringify(omesh2));
+	// LogError("Omesh1: " + JSON.stringify(omesh1));
+	// LogError("Omesh2: " + JSON.stringify(omesh2));
 	
-	var omesh = new Mesh();
-	omesh.vertices = omesh1.vertices.concat(omesh2.vertices);
-	omesh.faces = omesh1.faces.concat(omesh2.faces);
-	
+	// omesh.vertices = omesh1.vertices.concat(omesh2.vertices);
+	// omesh.faces = omesh1.faces.concat(omesh2.faces);
+	LogError("Square mesh gen: " + JSON.stringify(omesh));
 	omesh._packArrays();
+	LogError("Readable verts: " + omesh._vertices.toString());
+	LogError("Readable indices: " + omesh._indices.toString());
 	
 	return omesh;
 }
