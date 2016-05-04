@@ -69,10 +69,12 @@ function getSourceFromDOM(id) {
 	return shaderSource;
 }
 
-function LogError(message) {
+function LogError(rawMessage) {
+	// var message = rawMessage.replace(/\n/, "<br>", "gim");
+	var message = rawMessage;
 	if (LogElement != null) {
 		var text = document.createTextNode(message);
-		var par = document.createElement('p');
+		var par = document.createElement('pre');
 		par.appendChild(text);
 		LogElement.appendChild(par);
 	}

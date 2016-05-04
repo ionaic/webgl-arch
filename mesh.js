@@ -99,6 +99,7 @@ Mesh.prototype = {
 		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
 		LogError("Drawing Mesh " + this.toString());
+		LogError("Using material " + material.toString(true));
 		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
 			return;
 		}
@@ -107,7 +108,7 @@ Mesh.prototype = {
 		this._bindBuffers();
 		if (material) {
 			material.setUniforms();
-			material.setAttributes();
+			material.setAttributes(this);
 			material.useMaterial();
 		}
 		gl.drawArrays(gl.TRIANGLES, this.vertices.length, gl.UNSIGNED_SHORT, 0);

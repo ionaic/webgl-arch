@@ -1,3 +1,31 @@
+function VertexAttribute(inName) {
+	if (inName != null) {
+		this.name = inName
+	}
+	else {
+		name = "";
+	}
+	this.varLocation = null;
+	this.varBuffer = null;
+	this.varType = gl.FLOAT; // default to float3s
+	this.varNumber = 3;
+}
+VertexAttribute.prototype = {
+	toString : function() {
+		return "{" + this.name + ": (Loc: " + this.varLocation + "), (Buffer: " + this.varBuffer + "), (Type: " + this.varType + "), (Number: " + this.varNumber + ")}";
+	}
+};
+function Texture() {}
+
+function ShaderUniform() {
+	this.name = "";
+	this.varLocation = null;
+	this.varValue = null;
+	this.varType = gl.FLOAT; // default to float
+	this.varNumber = 3; // default to 3 vec
+	this.isMatrix = false; // boolean to determine if this is a matrix or not
+}
+
 function Material(inShaders, inTextures) {
 	if (inShaders != null) {
 		this.shaders = inShaders;
@@ -12,6 +40,23 @@ function Material(inShaders, inTextures) {
 		this.textures = [];
 	}
 }
+function ShaderAttributes() {
+	this.position = new VertexAttribute("position");
+	this.normal = new VertexAttribute("normal");
+	this.uv = new VertexAttribute("uv");
+	LogError("Constructing ShaderAttribtues " + this.position.constructor + " " + (this.position instanceof VertexAttribute));
+}
+ShaderAttributes.prototype = {
+	toString : function () {
+		var str = "";
+		for (var attr in this) {
+			if (this[attr] instanceof VertexAttribute) {
+				str += this[attr].toString() + ";";
+			}
+		}
+		return str;
+	}
+};
 function Shader(inName, inVertName, inFragName) {
 	if (inName != null) {
 		this.name = inName;
@@ -31,38 +76,20 @@ function Shader(inName, inVertName, inFragName) {
 	else {
 		this.fragmentName = "";
 	}
-	this.vertexAttributes = {
-		position : new VertexAttribute("position"),
-		normal : new VertexAttribute("normal"),
-		uv : new VertexAttribute("uv")
-	};
+	this.vertexAttributes = new ShaderAttributes();
+		// this is something fancy but it's upset abotu Symbol.iterator?
+		// Symbol.iterator : function*() {
+			// for (var el in this) {
+				// if (el instanceof VertexAttribute) {
+					// yield el;
+				// }
+			// }
+		// }
 	this.program = null;
 	this.fragment = null;
 	this.vertex = null;
 	this.uniforms = {};
 	this.initShader();
-}
-function VertexAttribute(inName) {
-	if (inName != null) {
-		this.name = inName
-	}
-	else {
-		name = "";
-	}
-	this.varLocation = null;
-	this.varBuffer = null;
-	this.varType = gl.FLOAT; // default to float3s
-	this.varNumber = 3;
-}
-function Texture() {}
-
-function ShaderUniform() {
-	this.name = "";
-	this.varLocation = null;
-	this.varValue = null;
-	this.varType = gl.FLOAT; // default to float
-	this.varNumber = 3; // default to 3 vec
-	this.isMatrix = false; // boolean to determine if this is a matrix or not
 }
 
 Shader.prototype = {
@@ -115,10 +142,17 @@ Shader.prototype = {
 		this.vertexAttributes.uv.varBuffer = meshobj.uvBuffer;
 		this.vertexAttributes.uv.varType = gl.FLOAT;
 		this.vertexAttributes.uv.varNumber = 2;
+		
+		LogError("Setting from mesh: " + meshobj.toString() + "\n" + this.vertexAttributes.toString());
+	},
+	setUniforms : function () {
+		
 	},
 	getAttributeLocations : function() {
 		for (var attr in this.vertexAttributes) {
-			attr.varLocation = gl.getAttributeLocation(this.program, attr.name);
+			if (attr instanceof VertexAttribute) {
+				attr.varLocation = gl.getAttribLocation(this.program, attr.name);
+			}
 		}
 	},
 	useAttributes : function() {
@@ -127,13 +161,16 @@ Shader.prototype = {
 		}
 	},
 	useMaterial : function() {
-		gl.useProgram(shaderProgram);
-		for (var attr in this.vertexAttributes) {		
-			gl.enableVertexAttribArray(attr.varLocation);
-			gl.bindBuffer(gl.ARRAY_BUFFER, attr.varBuffer);
-			// because i always forget what order the parameters go:
-			// vertexAttribPointer(GLint attrib location, GLint size, type, normalized?, stride, offset)
-			gl.vertexAttribPointer(attr.varLocation, attr.varNumber, attr.varType, false, 0, 0);
+		gl.useProgram(this.program);
+		for (var attr in this.vertexAttributes) {
+			if (attr instanceof VertexAttribute) {
+				LogError("Enabling attribute: " + attr.toString());
+				gl.enableVertexAttribArray(attr.varLocation);
+				gl.bindBuffer(gl.ARRAY_BUFFER, attr.varBuffer);
+				// because i always forget what order the parameters go:
+				// vertexAttribPointer(GLint attrib location, GLint size, type, normalized?, stride, offset)
+				gl.vertexAttribPointer(attr.varLocation, attr.varNumber, attr.varType, false, 0, 0);
+			}
 		}
 	},
 	toString : function(full = false) {
@@ -141,8 +178,8 @@ Shader.prototype = {
 			return JSON.stringify(this);
 		}
 		return this.name + ": vertex-->" + this.vertexName + "; fragment-->" + this.fragmentName + "; ";
-	}
-}
+	},
+};
 
 Material.prototype = {
 	addShader : function(inShaderName, inVertName, inFragName) {
@@ -154,8 +191,18 @@ Material.prototype = {
 			this.shaders[idx].setMeshAttributes(meshobj);
 		}
 	},
+	setUniforms : function() {
+		// TODO need some sort of handling for multiple shader passes
+		this.shaders[0].setUniforms();
+	},
+	setAttributes : function(mesh) {
+		this.shaders[0].setMeshAttributes(mesh);
+	},
+	useMaterial : function() {
+		this.shaders[0].useMaterial();
+	},
 	draw : function() {
-		
+		// TODO need some sort of handling for multiple shader passes
 	},
 	toString : function(full = false) {
 		var str = "";
@@ -163,5 +210,5 @@ Material.prototype = {
 			str += this.shaders[idx].toString(full);
 		}
 		return str;
-	}
-}
+	},
+};

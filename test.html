@@ -41,6 +41,7 @@
 				
 				var testSquare = new SceneObject("Square", createSquareMesh(1.0, true));
 				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
+				//testSquare.material.shaders[0].
 				Scene.addChild(testSquare);
 				LogError("Test square: " + testSquare.toString());
 				
