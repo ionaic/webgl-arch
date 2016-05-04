@@ -65,11 +65,11 @@ SceneObject.prototype = {
 	},
 	draw : function() {
 		// call draw function recursively through the tree
-		LogError("Drawing SceneObject " + this.name + ": " + JSON.stringify(this));
+		LogError("Drawing SceneObject " + this.name + ": " + this.toString());
 		if (this.children != null && this.children.length > 0) {
-			LogError("Children: " + JSON.stringify(this.children));
+			LogError("Children: [" + this.children.toString() + "]");
 			for (var idx = 0; idx < this.children.length; ++idx) {
-				LogError("Child of " + this.name + " (" + (idx + 1) + "/" + this.children.length + "): " + JSON.stringify(this.children[idx]));
+				LogError("Child of " + this.name + " (" + (idx + 1) + "/" + this.children.length + "): " + this.children[idx].toString());
 				this.children[idx].draw();
 			}
 		}

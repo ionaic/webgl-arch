@@ -42,7 +42,7 @@
 				var testSquare = new SceneObject("Square", createSquareMesh(1.0, true));
 				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
 				Scene.addChild(testSquare);
-				LogError("Test square: " + JSON.stringify(testSquare));
+				LogError("Test square: " + testSquare.toString());
 				
 				perspectiveMatrix = makePerspective(45, 640.0/480.0, 0.1, 100.0);
   

@@ -98,7 +98,7 @@ Mesh.prototype = {
 	_drawMesh : function(material) {
 		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
-		LogError("Drawing Mesh " + JSON.stringify(this) + "; " + this._vertices.toString() + "; " + this._indices.toString());
+		LogError("Drawing Mesh " + this.toString());
 		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
 			return;
 		}
@@ -194,21 +194,8 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 		omesh.faces.push(f2);
 	}
 	
-	
-	
-	// increase the index values to concat properly the two meshes
-	// for (var idx = 0; idx < omesh2.faces.length; ++idx) {
-		// var tmp = omesh2.faces[idx].indices.add($V([omesh1.vertices.length, omesh1.vertices.length, omesh1.vertices.length]));
-		// omesh2.faces[idx].indices.setElements(tmp);
-	// }
-	
 	LogError("A: " + JSON.stringify(a) + "\nB: " + JSON.stringify(b) + "\nC: " + JSON.stringify(c) + "\nD: " + JSON.stringify(d));
-	
-	// LogError("Omesh1: " + JSON.stringify(omesh1));
-	// LogError("Omesh2: " + JSON.stringify(omesh2));
-	
-	// omesh.vertices = omesh1.vertices.concat(omesh2.vertices);
-	// omesh.faces = omesh1.faces.concat(omesh2.faces);
+
 	omesh._packArrays();
 	LogError(omesh.toString());
 	

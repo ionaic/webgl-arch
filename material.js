@@ -136,6 +136,12 @@ Shader.prototype = {
 			gl.vertexAttribPointer(attr.varLocation, attr.varNumber, attr.varType, false, 0, 0);
 		}
 	},
+	toString : function(full = false) {
+		if (full) {
+			return JSON.stringify(this);
+		}
+		return this.name + ": vertex-->" + this.vertexName + "; fragment-->" + this.fragmentName + "; ";
+	}
 }
 
 Material.prototype = {
@@ -151,4 +157,11 @@ Material.prototype = {
 	draw : function() {
 		
 	},
+	toString : function(full = false) {
+		var str = "";
+		for (var idx = 0; idx < this.shaders.length; ++idx) {
+			str += this.shaders[idx].toString(full);
+		}
+		return str;
+	}
 }
