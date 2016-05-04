@@ -65,8 +65,6 @@ Mesh.prototype = {
 	_bindBuffers : function() {
 		// bind buffers to this mesh's index/vertex buffers
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
-		// gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
-		// gl.bindBuffer(gl.ARRAY_BUFFER, this.uvBuffer);
 		gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 	},
 	updateBuffers : function() {
@@ -94,7 +92,7 @@ Mesh.prototype = {
 
 		// INDEX_BUFFER should still be bound to our index buffer, though ARRAY_BUFFER is now bound to the uv or normals potentially
 		if (this._indices!= null) {	
-			gl.bufferData(gl.INDEX_BUFFER, this._indices, gl.STATIC_DRAW);
+			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
 	},
 	_drawMesh : function(material) {
@@ -113,6 +111,12 @@ Mesh.prototype = {
 			material.useMaterial();
 		}
 		gl.drawArrays(gl.TRIANGLES, this.vertices.length, gl.UNSIGNED_SHORT, 0);
+	},
+	toString : function(full=false) {
+		if (full) {
+			return JSON.stringify(this);
+		}
+		return "Vertices: [" + this._vertices.toString() + "];\nIndices: [" + this._indices.toString() + "];\n";
 	}
 };
 
@@ -144,15 +148,15 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 		var vd = new Vertex(), ve = new Vertex(), vf = new Vertex();
 		vd.normal = ve.normal = vf.normal = faceNorm.multiply(-1);
 		vd.position = $V(a);
-		vf.position = $V(c);
 		ve.position = $V(b);
+		vf.position = $V(c);
 		
 		omesh.vertices.push(vd);
 		omesh.vertices.push(ve);
 		omesh.vertices.push(vf);
 		
 		var f2 = new Face();
-		f2.indices.setElements([3, 4, 5]);
+		f2.indices.setElements([3, 5, 4]);
 		f2.normal = faceNorm.multiply(-1);
 		omesh.faces.push(f2);
 	}
@@ -160,7 +164,7 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 	omesh._packArrays();
 	omesh.initBuffers();
 	
-	LogError("Generated Tri: " + JSON.stringify(omesh));
+	LogError("Generated Tri: " + omesh.toString());
 	
 	return omesh;
 }
@@ -186,7 +190,7 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 		omesh.vertices.push(vd2);
 
 		var f2 = new Face();
-		f2.indices.setElements([3, 5, omesh.vertices.length - 1]);
+		f2.indices.setElements([3, omesh.vertices.length - 1, 5]);
 		omesh.faces.push(f2);
 	}
 	
@@ -205,10 +209,8 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 	
 	// omesh.vertices = omesh1.vertices.concat(omesh2.vertices);
 	// omesh.faces = omesh1.faces.concat(omesh2.faces);
-	LogError("Square mesh gen: " + JSON.stringify(omesh));
 	omesh._packArrays();
-	LogError("Readable verts: " + omesh._vertices.toString());
-	LogError("Readable indices: " + omesh._indices.toString());
+	LogError(omesh.toString());
 	
 	return omesh;
 }

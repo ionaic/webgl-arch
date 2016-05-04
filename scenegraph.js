@@ -80,6 +80,12 @@ SceneObject.prototype = {
 		this.children.push(childobj);
 	},
 	addComponent : function(component) {
+	},
+	toString : function(full=false) {
+		if (full) {
+			return JSON.stringify(this);
+		}
+		return "Name: " + this.name + ";\n" + this.mesh.toString() + this.material.toString();
 	}
 };
 
