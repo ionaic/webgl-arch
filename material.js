@@ -150,8 +150,12 @@ Shader.prototype = {
 	},
 	getAttributeLocations : function() {
 		for (var attr in this.vertexAttributes) {
-			if (attr instanceof VertexAttribute) {
-				attr.varLocation = gl.getAttribLocation(this.program, attr.name);
+			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
+				LogError("Getting Attribute: " + this.vertexAttributes[attr].toString());
+				this.vertexAttributes[attr].varLocation = gl.getAttribLocation(this.program, this.vertexAttributes[attr].name);
+			}
+			else {
+				LogError("Attr: " + attr.toString() + " not instance of VertexAttribute");
 			}
 		}
 	},

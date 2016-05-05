@@ -110,6 +110,7 @@ Mesh.prototype = {
 			material.setUniforms();
 			material.setAttributes(this);
 			material.useMaterial();
+			LogError("After using material " + material.toString(true));
 		}
 		gl.drawArrays(gl.TRIANGLES, this.vertices.length, gl.UNSIGNED_SHORT, 0);
 	},
