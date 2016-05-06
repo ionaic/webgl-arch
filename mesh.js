@@ -98,14 +98,15 @@ Mesh.prototype = {
 	_drawMesh : function(material) {
 		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
-		LogError("Drawing Mesh " + this.toString());
-		LogError("Using material " + material.toString(true));
+		LogError("Drawing Mesh: " + this.toString());
+		LogError("Using material: " + material.toString(true));
 		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
 			LogError("No mesh, skipping draw for this mesh");
 			return;
 		}
 		this._packArrays();
 		this._setBufferData();
+		this._bindBuffers();
 		if (material) {
 			material.setUniforms();
 			material.setAttributes(this);
@@ -113,6 +114,7 @@ Mesh.prototype = {
 			LogError("After using material " + material.toString(true));
 		}
 		this._bindBuffers();
+		// drawElements(mode, number, type, offset)
 		gl.drawElements(gl.TRIANGLES, this._indices.length, gl.UNSIGNED_SHORT, 0);
 	},
 	toString : function(full=false) {
@@ -142,7 +144,7 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 	omesh.vertices.push(vc);
 	
 	var f1 = new Face(), f2 = new Face();
-	f1.indices.setElements([0, 1, 2]);
+	f1.indices.setElements([2, 1, 0]);
 	f1.normal = faceNorm; 
 	omesh.faces.push(f1);
 	
@@ -159,7 +161,7 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 		omesh.vertices.push(vf);
 		
 		var f2 = new Face();
-		f2.indices.setElements([3, 5, 4]);
+		f2.indices.setElements([3, 4, 5]);
 		f2.normal = faceNorm.multiply(-1);
 		omesh.faces.push(f2);
 	}
@@ -183,6 +185,7 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 	omesh.vertices.push(vd);
 	
 	var f1 = new Face();
+	// f1.indices.setElements([omesh.vertices.length - 1, 2, 0]);
 	f1.indices.setElements([0, 2, omesh.vertices.length - 1]);
 	omesh.faces.push(f1);
 	
@@ -193,14 +196,14 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 		omesh.vertices.push(vd2);
 
 		var f2 = new Face();
-		f2.indices.setElements([3, omesh.vertices.length - 1, 5]);
+		f2.indices.setElements([5, omesh.vertices.length - 1, 3]);
 		omesh.faces.push(f2);
 	}
 	
 	LogError("A: " + JSON.stringify(a) + "\nB: " + JSON.stringify(b) + "\nC: " + JSON.stringify(c) + "\nD: " + JSON.stringify(d));
 
 	omesh._packArrays();
-	LogError(omesh.toString());
+	LogError("Created quad: " + omesh.toString());
 	
 	return omesh;
 }

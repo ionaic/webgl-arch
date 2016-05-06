@@ -56,7 +56,7 @@ SceneObject.prototype = {
 			}
 		}
 		this.mesh._drawMesh(this.material);
-		LogError("Drawing Mesh for: " + this.name + " with nVerts = " + this.mesh._vertices.length);
+		LogError("Drawing Mesh for: " + this.name + " with nVerts = " + this.mesh._vertices.length + " and nInd = " + this.mesh._indices.length);
 	},
 	addChild : function(childobj) {
 		// childobj.parent = this;

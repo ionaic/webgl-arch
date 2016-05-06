@@ -65,8 +65,8 @@ Material.prototype = {
 
 function ShaderAttributes() {
 	this.position = new VertexAttribute("position");
-	this.normal = new VertexAttribute("normal");
-	this.uv = new VertexAttribute("uv");
+	// this.normal = new VertexAttribute("normal");
+	// this.uv = new VertexAttribute("uv");
 }
 ShaderAttributes.prototype = {
 	toString : function () {
@@ -116,12 +116,14 @@ Shader.prototype = {
 			shaderCompileCheckErr(this.fragmentName, this.fragment);
 			
 			gl.attachShader(this.program, this.fragment);
+			LogError("Attaching fragment shader.");
 		}
 		if (this.vertexName != null) {
 			gl.shaderSource(this.vertex, getSourceFromDOM(this.vertexName));
 			shaderCompileCheckErr(this.vertexName, this.vertex);
 			
 			gl.attachShader(this.program, this.vertex);
+			LogError("Attaching vertex shader.");
 		}
 		
 		gl.linkProgram(this.program);
@@ -143,13 +145,13 @@ Shader.prototype = {
 		this.vertexAttributes.position.varType = gl.FLOAT;
 		this.vertexAttributes.position.varNumber = 3;
 		
-		this.vertexAttributes.normal.varBuffer = meshobj.normalBuffer;
-		this.vertexAttributes.normal.varType = gl.FLOAT;
-		this.vertexAttributes.normal.varNumber = 3;
+		// this.vertexAttributes.normal.varBuffer = meshobj.normalBuffer;
+		// this.vertexAttributes.normal.varType = gl.FLOAT;
+		// this.vertexAttributes.normal.varNumber = 3;
 		
-		this.vertexAttributes.uv.varBuffer = meshobj.uvBuffer;
-		this.vertexAttributes.uv.varType = gl.FLOAT;
-		this.vertexAttributes.uv.varNumber = 2;
+		// this.vertexAttributes.uv.varBuffer = meshobj.uvBuffer;
+		// this.vertexAttributes.uv.varType = gl.FLOAT;
+		// this.vertexAttributes.uv.varNumber = 2;
 		
 		LogError("Setting from mesh: " + meshobj.toString() + "\n" + this.vertexAttributes.toString());
 	},
@@ -168,8 +170,11 @@ Shader.prototype = {
 		}
 	},
 	useAttributes : function() {
-		for (var va in this.vertexAttributes) {
-			gl.enableVertexAttribArray(va.varLocation);
+		for (var attr in this.vertexAttributes) {
+			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
+				gl.enableVertexAttribArray(this.vertexAttributes[attr].varLocation);
+				LogError("Using Attribute: " + this.vertexAttribtues[attr].toString());
+			}
 		}
 	},
 	useMaterial : function() {

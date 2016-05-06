@@ -8,6 +8,9 @@
         <script type="text/javascript" src="mathextras.js"></script>
 		<script type="text/javascript" src="glUtil.js"></script>
 		<script type="text/javascript">
+			var mvMatrix;
+			var perspectiveMatrix;
+			
 			function loadIdentity() {
 				mvMatrix = Matrix.I(4);
 			}
@@ -39,9 +42,8 @@
 				var Scene = new SceneObject();
 				Scene.name = "Scene";
 				
-				var testSquare = new SceneObject("Square", createSquareMesh(1.0, true));
+				var testSquare = new SceneObject("Square", createSquareMesh(1.0, $V([0, 0, 1]), false));
 				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
-				//testSquare.material.shaders[0].
 				Scene.addChild(testSquare);
 				LogError("Test square: " + testSquare.toString());
 				
@@ -53,6 +55,10 @@
 				setMatrixUniforms(testSquare.material.shaders[0]);
 				
 				Scene.draw();
+				//gl.bindBuffer(gl.ARRAY_BUFFER, testSquare.mesh.vertexBuffer);
+				//gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, testSquare.mesh.indexBuffer);
+				//testSquare.mesh._bindBuffers();
+				gl.drawElements(gl.TRIANGLES, testSquare.mesh._indices.length, gl.UNSIGNED_SHORT, 0);
             }
         </script>
 		<script id="shader-fs" type="x-shader/x-fragment">
@@ -63,7 +69,7 @@
 			varying vec2 oUv;
 		
 			void main(void) {
-				gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
+				gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
 			}
 		</script>
 		<script id="shader-vs" type="x-shader/x-vertex">
@@ -80,8 +86,7 @@
 
 			void main(void) {
 				oPosition = vec4(position, 1.0);
-				// gl_Position = uPMatrix * uMVMatrix * oPosition;
-				gl_Position = oPosition;
+				gl_Position = uPMatrix * uMVMatrix * oPosition;
 				oNormal = normal;
 				oUv = uv;
 			}

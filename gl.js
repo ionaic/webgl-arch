@@ -24,27 +24,31 @@ function initGL(canvas) {
         gl.depthFunc(gl.LEQUAL);
         // clear the color/depth buffers
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+		
+		gl.disable(gl.CULL_FACE);
+		
+		gl.viewport(0, 0, canvas.width, canvas.height);
     }
 }
 
-function initShaders() {
-    var fragmentShader = getShaderFromDOM(gl, "shader-fs");
-    var vertexShader = getShaderFromDOM(gl, "shader-vs");
+// function initShaders() {
+    // var fragmentShader = getShaderFromDOM(gl, "shader-fs");
+    // var vertexShader = getShaderFromDOM(gl, "shader-vs");
 
-    shaderProgram = gl.createProgram();
-    gl.attachShader(shaderProgram, vertexShader);
-    gl.attachShader(shaderProgram, fragmentShader);
-    gl.linkProgram(shaderProgram);
+    // shaderProgram = gl.createProgram();
+    // gl.attachShader(shaderProgram, vertexShader);
+    // gl.attachShader(shaderProgram, fragmentShader);
+    // gl.linkProgram(shaderProgram);
 
-    if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        alert("Unable to initialize the shader program.");
-    }
+    // if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
+        // alert("Unable to initialize the shader program.");
+    // }
     
-    gl.useProgram(shaderProgram);
+    // gl.useProgram(shaderProgram);
 
-    vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    gl.enableVertexAttribArray(vertexPositionAttribute);
-}
+    // vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
+    // gl.enableVertexAttribArray(vertexPositionAttribute);
+// }
 
 function getSourceFromDOM(id) {
 	// adapted from a mozilla example, modified to only grab source and return it
