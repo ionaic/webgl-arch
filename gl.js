@@ -83,14 +83,16 @@ function LogError(rawMessage) {
 	}
 }
 
-function shaderCompileCheckErr(shader) {
+function shaderCompileCheckErr(shaderName, shader) {
 	// Compile the shader program
 	gl.compileShader(shader);  
 
 	// See if it compiled successfully
 	if (!gl.getShaderParameter(shader, gl.COMPILE_STATUS)) {
-		LogError("Shader compilation failed.\n" + gl.getShaderInfoLog(shader));  
-		return null;  
+		LogError("Shader compilation for " + shaderName + " failed.\n" + gl.getShaderInfoLog(shader));  
+	}
+	else {
+		LogError("Compiled shader " + shaderName + ".\n" + gl.getShaderInfoLog(shader));
 	}
 }
 

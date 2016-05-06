@@ -101,25 +101,26 @@ Mesh.prototype = {
 		LogError("Drawing Mesh " + this.toString());
 		LogError("Using material " + material.toString(true));
 		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
+			LogError("No mesh, skipping draw for this mesh");
 			return;
 		}
 		this._packArrays();
 		this._setBufferData();
-		this._bindBuffers();
 		if (material) {
 			material.setUniforms();
 			material.setAttributes(this);
 			material.useMaterial();
 			LogError("After using material " + material.toString(true));
 		}
-		gl.drawArrays(gl.TRIANGLES, this.vertices.length, gl.UNSIGNED_SHORT, 0);
+		this._bindBuffers();
+		gl.drawElements(gl.TRIANGLES, this._indices.length, gl.UNSIGNED_SHORT, 0);
 	},
 	toString : function(full=false) {
 		if (full) {
 			return JSON.stringify(this);
 		}
-		return "Vertices: [" + this._vertices.toString() + "];\nIndices: [" + this._indices.toString() + "];\n";
-	}
+		return "Vertices: [" + this._vertices.toString() + "];\nIndices: [" + this._indices.toString() + "];\nNormals: [" + this._normals + "];\nUV: [" + this._uv + "];\n";
+	},
 };
 
 // utilities for making random geometry

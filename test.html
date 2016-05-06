@@ -56,18 +56,34 @@
             }
         </script>
 		<script id="shader-fs" type="x-shader/x-fragment">
+			precision mediump float;
+			
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
+		
 			void main(void) {
 				gl_FragColor = vec4(1.0, 1.0, 1.0, 1.0);
 			}
 		</script>
 		<script id="shader-vs" type="x-shader/x-vertex">
 			attribute vec3 position;
+			attribute vec3 normal;
+			attribute vec2 uv;
+			
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
 
 			uniform mat4 uMVMatrix;
 			uniform mat4 uPMatrix;
 
 			void main(void) {
-				gl_Position = uPMatrix * uMVMatrix * vec4(position, 1.0);
+				oPosition = vec4(position, 1.0);
+				// gl_Position = uPMatrix * uMVMatrix * oPosition;
+				gl_Position = oPosition;
+				oNormal = normal;
+				oUv = uv;
 			}
 		</script>
     </head>
