@@ -47,16 +47,13 @@ SceneObject.prototype = {
 	},
 	draw : function() {
 		// call draw function recursively through the tree
-		LogError("Drawing SceneObject " + this.name + ": " + this.toString());
 		if (this.children != null && this.children.length > 0) {
-			LogError("Children: [" + this.children.toString() + "]");
 			for (var idx = 0; idx < this.children.length; ++idx) {
 				LogError("Child of " + this.name + " (" + (idx + 1) + "/" + this.children.length + "): " + this.children[idx].toString());
 				this.children[idx].draw();
 			}
 		}
 		this.mesh._drawMesh(this.material);
-		LogError("Drawing Mesh for: " + this.name + " with nVerts = " + this.mesh._vertices.length + " and nInd = " + this.mesh._indices.length);
 	},
 	addChild : function(childobj) {
 		// childobj.parent = this;

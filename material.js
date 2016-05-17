@@ -65,8 +65,8 @@ Material.prototype = {
 
 function ShaderAttributes() {
 	this.position = new VertexAttribute("position");
-	// this.normal = new VertexAttribute("normal");
-	// this.uv = new VertexAttribute("uv");
+	this.normal = new VertexAttribute("normal");
+	this.uv = new VertexAttribute("uv");
 }
 ShaderAttributes.prototype = {
 	toString : function () {
@@ -145,13 +145,13 @@ Shader.prototype = {
 		this.vertexAttributes.position.varType = gl.FLOAT;
 		this.vertexAttributes.position.varNumber = 3;
 		
-		// this.vertexAttributes.normal.varBuffer = meshobj.normalBuffer;
-		// this.vertexAttributes.normal.varType = gl.FLOAT;
-		// this.vertexAttributes.normal.varNumber = 3;
+		this.vertexAttributes.normal.varBuffer = meshobj.normalBuffer;
+		this.vertexAttributes.normal.varType = gl.FLOAT;
+		this.vertexAttributes.normal.varNumber = 3;
 		
-		// this.vertexAttributes.uv.varBuffer = meshobj.uvBuffer;
-		// this.vertexAttributes.uv.varType = gl.FLOAT;
-		// this.vertexAttributes.uv.varNumber = 2;
+		this.vertexAttributes.uv.varBuffer = meshobj.uvBuffer;
+		this.vertexAttributes.uv.varType = gl.FLOAT;
+		this.vertexAttributes.uv.varNumber = 2;
 		
 		LogError("Setting from mesh: " + meshobj.toString() + "\n" + this.vertexAttributes.toString());
 	},

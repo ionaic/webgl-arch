@@ -31,25 +31,6 @@ function initGL(canvas) {
     }
 }
 
-// function initShaders() {
-    // var fragmentShader = getShaderFromDOM(gl, "shader-fs");
-    // var vertexShader = getShaderFromDOM(gl, "shader-vs");
-
-    // shaderProgram = gl.createProgram();
-    // gl.attachShader(shaderProgram, vertexShader);
-    // gl.attachShader(shaderProgram, fragmentShader);
-    // gl.linkProgram(shaderProgram);
-
-    // if (!gl.getProgramParameter(shaderProgram, gl.LINK_STATUS)) {
-        // alert("Unable to initialize the shader program.");
-    // }
-    
-    // gl.useProgram(shaderProgram);
-
-    // vertexPositionAttribute = gl.getAttribLocation(shaderProgram, "aVertexPosition");
-    // gl.enableVertexAttribArray(vertexPositionAttribute);
-// }
-
 function getSourceFromDOM(id) {
 	// adapted from a mozilla example, modified to only grab source and return it
 	 var shaderScript, shaderSource, currentChild;

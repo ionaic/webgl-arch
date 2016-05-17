@@ -1,16 +1,16 @@
-function Vertex() {
-	this.position = $V([0, 0, 0, 1]);
-	this.normal = $V([0, 0, 0]);
-	this.uv = $V([0, 0]);
+function Vertex(inPosition, inNormal, inUv) {
+	this.position = inPosition || $V([0, 0, 0, 1]);
+	this.normal = inNormal || $V([0, 0, 0]);
+	this.uv = inUv || $V([0, 0]);
 }
-function Face() {
-	this.indices = $V([0, 0, 0]);
-	this.normal = $V([0, 0, 0]);
+function Face(inIndices, inNormal) {
+	this.indices = inIndices || $V([0, 0, 0]);
+	this.normal = inNormal || $V([0, 0, 0]);
 }
 function Mesh() {
 	// internal arrays, less org than external facing arrays
 	this._vertices = new Float32Array();
-	this._indices = new Uint32Array();
+	this._indices = new Uint16Array();
 	this._normals = new Float32Array();
 	this._uv = new Float32Array();
 	// user friendly vertex/index arrays
@@ -41,7 +41,7 @@ Mesh.prototype = {
 		this._vertices = Float32Array.from(tmpVerts);
 		this._normals = Float32Array.from(tmpNormals);
 		this._uv = Float32Array.from(tmpUV);
-		this._indices = Uint32Array.from(tmpIndices);
+		this._indices = Uint16Array.from(tmpIndices);
 	},
 	initBuffers : function() {
 		if (this.vertexBuffer == null) {
@@ -80,7 +80,9 @@ Mesh.prototype = {
 		this._bindBuffers();
 		
 		// we MUST have vertices, optional indices
+		gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexBuffer);
 		gl.bufferData(gl.ARRAY_BUFFER, this._vertices, gl.STATIC_DRAW);
+
 		if (this._normals != null) {
 			gl.bindBuffer(gl.ARRAY_BUFFER, this.normalBuffer);
 			gl.bufferData(gl.ARRAY_BUFFER, this._normals, gl.STATIC_DRAW);
@@ -92,6 +94,7 @@ Mesh.prototype = {
 
 		// INDEX_BUFFER should still be bound to our index buffer, though ARRAY_BUFFER is now bound to the uv or normals potentially
 		if (this._indices!= null) {	
+			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
 	},
@@ -179,14 +182,15 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 	// var omesh2 = createSingleTriangleMesh(c, d, a, twosided);
 	
 	var omesh = createSingleTriangleMesh(a, b, c, twosided);
+	// return omesh;
 	var vd = new Vertex();
 	vd.position = $V(d);
 	vd.normal = omesh.vertices[0].normal;
 	omesh.vertices.push(vd);
 	
 	var f1 = new Face();
-	// f1.indices.setElements([omesh.vertices.length - 1, 2, 0]);
-	f1.indices.setElements([0, 2, omesh.vertices.length - 1]);
+	f1.indices.setElements([omesh.vertices.length - 1, 2, 0]);
+	// f1.indices.setElements([0, 2, omesh.vertices.length - 1]);
 	omesh.faces.push(f1);
 	
 	if (twosided) {
@@ -196,7 +200,7 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 		omesh.vertices.push(vd2);
 
 		var f2 = new Face();
-		f2.indices.setElements([5, omesh.vertices.length - 1, 3]);
+		f2.indices.setElements([3, 5, omesh.vertices.length - 1]);
 		omesh.faces.push(f2);
 	}
 	
@@ -210,10 +214,12 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 
 function createSquareMesh(dim, normal, twosided=true) {
 	// TODO transform so that the normal points in the correct direction
-	var omesh = createSingleQuadMesh([dim, dim, 0.0], // 
+	var omesh = createSingleQuadMesh(
+									[dim, dim, 0.0], // 
 									 [-1.0 * dim, dim, 0.0], // 
 									 [-1.0 * dim, -1.0 * dim, 0.0], //
-									 [dim, -1.0 * dim, 0.0], twosided);
+									 [dim, -1.0 * dim, 0.0], //
+									 twosided);
 	return omesh;
 }
 
@@ -231,6 +237,43 @@ function createCircleMesh(center, radius, normal, twosided=true, ccw=true) {
 
 function createCubeMesh(dim, twosided=true, ccw=true) {
 	var omesh;
+	
+	// // Front face
+	// [-1.0, -1.0,  1.0]
+	// [1.0, -1.0,  1.0]
+	// [1.0,  1.0,  1.0]
+	// [-1.0,  1.0,  1.0]
+
+	// // Back face
+	// [-1.0, -1.0, -1.0]
+	// [-1.0,  1.0, -1.0]
+	// [1.0,  1.0, -1.0]
+	// [1.0, -1.0, -1.0]
+
+	// // Top face
+	// [-1.0,  1.0, -1.0]
+	// [-1.0,  1.0,  1.0]
+	// [1.0,  1.0,  1.0]
+	// [1.0,  1.0, -1.0]
+
+	// // Bottom face
+	// [-1.0, -1.0, -1.0]
+	// [1.0, -1.0, -1.0]
+	// [1.0, -1.0,  1.0]
+	// [-1.0, -1.0,  1.0]
+
+	// // Right face
+	// [1.0, -1.0, -1.0]
+	// [1.0,  1.0, -1.0]
+	// [1.0,  1.0,  1.0]
+	// [1.0, -1.0,  1.0]
+
+	// // Left face
+	// [-1.0, -1.0, -1.0]
+	// [-1.0, -1.0,  1.0]
+	// [-1.0,  1.0,  1.0]
+	// [-1.0,  1.0, -1.0]
+	
 	
 	return omesh;
 }

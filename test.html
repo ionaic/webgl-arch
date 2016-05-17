@@ -43,9 +43,14 @@
 				Scene.name = "Scene";
 				
 				var testSquare = new SceneObject("Square", createSquareMesh(1.0, $V([0, 0, 1]), false));
+				testSquare.mesh._packArrays();
 				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
 				Scene.addChild(testSquare);
-				LogError("Test square: " + testSquare.toString());
+				
+				var testTri = new SceneObject("Tri", createSingleTriangleMesh([1.0, 1.0, 0.0], // 
+																			  [-1.0, -1.0, 0.0], //
+									                                          [1.0, -1.0, 0.0], false));
+				testTri.material.addShader("basic", "shader-vs", "shader-fs");
 				
 				perspectiveMatrix = makePerspective(45, 640.0/480.0, 0.1, 100.0);
   
@@ -53,12 +58,9 @@
 				mvTranslate([-0.0, 0.0, -6.0]);
 				
 				setMatrixUniforms(testSquare.material.shaders[0]);
+				setMatrixUniforms(testTri.material.shaders[0]);
 				
 				Scene.draw();
-				//gl.bindBuffer(gl.ARRAY_BUFFER, testSquare.mesh.vertexBuffer);
-				//gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, testSquare.mesh.indexBuffer);
-				//testSquare.mesh._bindBuffers();
-				gl.drawElements(gl.TRIANGLES, testSquare.mesh._indices.length, gl.UNSIGNED_SHORT, 0);
             }
         </script>
 		<script id="shader-fs" type="x-shader/x-fragment">
@@ -69,7 +71,8 @@
 			varying vec2 oUv;
 		
 			void main(void) {
-				gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+				//gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+				gl_FragColor = (oPosition + 1.0) * 0.5;
 			}
 		</script>
 		<script id="shader-vs" type="x-shader/x-vertex">
