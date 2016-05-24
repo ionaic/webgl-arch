@@ -7,6 +7,7 @@ function Face(inIndices, inNormal) {
 	this.indices = inIndices || $V([0, 0, 0]);
 	this.normal = inNormal || $V([0, 0, 0]);
 }
+
 function Mesh() {
 	// internal arrays, less org than external facing arrays
 	this._vertices = new Float32Array();
@@ -21,6 +22,10 @@ function Mesh() {
 	this.normalBuffer = null;
 	this.uvBuffer = null;
 	this.indexBuffer = null;
+	// draw indexed or no
+	this.drawIndexed = true;
+	// draw lines mode for debugging
+	this.drawWireframe = false;
 }
 
 Mesh.prototype = {
@@ -98,11 +103,9 @@ Mesh.prototype = {
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
 	},
-	_drawMesh : function(material) {
+	draw : function(material) {
 		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
-		LogError("Drawing Mesh: " + this.toString());
-		LogError("Using material: " + material.toString(true));
 		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
 			LogError("No mesh, skipping draw for this mesh");
 			return;
@@ -114,11 +117,20 @@ Mesh.prototype = {
 			material.setUniforms();
 			material.setAttributes(this);
 			material.useMaterial();
-			LogError("After using material " + material.toString(true));
 		}
+		this._drawMesh();
+	},
+	_drawMesh : function() {
 		this._bindBuffers();
-		// drawElements(mode, number, type, offset)
-		gl.drawElements(gl.TRIANGLES, this._indices.length, gl.UNSIGNED_SHORT, 0);
+		if (this.drawIndexed) {
+			// drawElements(mode, number, type, offset)
+			gl.drawElements(this.drawWireframe ? gl.LINE_LOOP : gl.TRIANGLES, this._indices.length, gl.UNSIGNED_SHORT, 0);
+		}
+		else {
+			// drawArrays(mode, first, count)
+			LogError("Drawing len: " + this._vertices.length);
+			gl.drawArrays(this.drawWireframe ? gl.LINE_LOOP : gl.TRIANGLES, 0, this._vertices.length / 3);
+		}
 	},
 	toString : function(full=false) {
 		if (full) {

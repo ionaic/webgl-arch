@@ -53,7 +53,7 @@ SceneObject.prototype = {
 				this.children[idx].draw();
 			}
 		}
-		this.mesh._drawMesh(this.material);
+		this.mesh.draw(this.material);
 	},
 	addChild : function(childobj) {
 		// childobj.parent = this;

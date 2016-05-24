@@ -55,7 +55,7 @@
 				perspectiveMatrix = makePerspective(45, 640.0/480.0, 0.1, 100.0);
   
 				loadIdentity();
-				mvTranslate([-0.0, 0.0, -6.0]);
+				mvTranslate([-0.0, 0.0, -3.0]);
 				
 				setMatrixUniforms(testSquare.material.shaders[0]);
 				setMatrixUniforms(testTri.material.shaders[0]);
@@ -64,6 +64,7 @@
             }
         </script>
 		<script id="shader-fs" type="x-shader/x-fragment">
+			// specifies floating point precision
 			precision mediump float;
 			
 			varying vec4 oPosition;
@@ -71,7 +72,7 @@
 			varying vec2 oUv;
 		
 			void main(void) {
-				//gl_FragColor = vec4(1.0, 0.0, 1.0, 1.0);
+				// convert the position from range [-1, 1] to [0, 1] for colors
 				gl_FragColor = (oPosition + 1.0) * 0.5;
 			}
 		</script>
@@ -83,8 +84,10 @@
 			varying vec4 oPosition;
 			varying vec3 oNormal;
 			varying vec2 oUv;
-
+			
+			// model view matrix (positioning in space of your vertex)
 			uniform mat4 uMVMatrix;
+			// perspective matrix (camera)
 			uniform mat4 uPMatrix;
 
 			void main(void) {

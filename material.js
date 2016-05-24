@@ -16,7 +16,18 @@ VertexAttribute.prototype = {
 	}
 };
 
-function Texture() {}
+function Texture(inName) {
+	this.name = inName || "";
+	
+}
+Texture.prototype = {
+	LoadFromDOM : function(domID) {
+		
+	},
+	LoadFromPath : function(path) {
+		
+	}
+}
 
 function ShaderUniform(inName, inLoc, inVal, inType, inNum, inMat) {
 	this.name = inName || "";
@@ -25,6 +36,14 @@ function ShaderUniform(inName, inLoc, inVal, inType, inNum, inMat) {
 	this.varType = inType || gl.FLOAT; // default to float
 	this.varNumber = inNum || 3; // default to 3 vec
 	this.isMatrix = inMat || false; // boolean to determine if this is a matrix or not
+}
+ShaderUniform.prototype = {
+	setUniform : function() {
+		if (this.varValue instanceof Matrix) {
+			this.isMatrix = true;
+		}
+		
+	}
 }
 
 function Material(inShaders, inTextures) {
@@ -49,10 +68,17 @@ Material.prototype = {
 		this.shaders[0].setMeshAttributes(mesh);
 	},
 	useMaterial : function() {
-		this.shaders[0].useMaterial();
+		this.shaders[0].useShader();
 	},
 	draw : function() {
-		// TODO need some sort of handling for multiple shader passes
+		// TODO need some sort of registry so you cna batch call draw, 1 call to material.draw for all meshes using material
+		this.setUniforms();
+		this.setAttributes();
+		this.useMaterial();
+
+		for (var idx = 0; idx < arguments.length; ++idx) {
+			arguments[idx]._bindBuffers();
+		}
 	},
 	toString : function(full = false) {
 		var str = "";
@@ -89,15 +115,18 @@ ShaderAttributes.prototype = {
 };
 
 function Shader(inName, inVertName, inFragName) {
-	LogError("Constructing Shader: " + inName + "(" + inVertName + ", " + inFragName + ")");
-	this.name = inName || "";
-	this.vertexName = inVertName || "";
-	this.fragmentName = inFragName || "";
-	this.vertexAttributes = new ShaderAttributes();
+	this.name = inName || ""; // shader program name
+	this.vertexName = inVertName || ""; // vertex shader name
+	this.fragmentName = inFragName || ""; // fragment shader name
+	this.vertexAttributes = new ShaderAttributes(); // vertex attributes
 	this.program = gl.createProgram();
 	this.fragment = gl.createShader(gl.FRAGMENT_SHADER);
 	this.vertex = gl.createShader(gl.VERTEX_SHADER);
 	this.uniforms = {};
+	
+	// hook functions to allow user to call GL calls before and after each shader
+	this.preRenderHook = function() {};
+	this.postRenderHook = function() {};
 	
 	this.initShader();
 }
@@ -177,7 +206,7 @@ Shader.prototype = {
 			}
 		}
 	},
-	useMaterial : function() {
+	useShader : function() {
 		gl.useProgram(this.program);
 		for (var attr in this.vertexAttributes) {
 			if (this.vertexAttributes[attr] instanceof VertexAttribute) {

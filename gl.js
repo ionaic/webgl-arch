@@ -1,6 +1,6 @@
-var gl = {};
+var gl = {}; // sets to an empty object, prevents null errors (they'll be silent)
 
-var LogElement;
+var LogElement; // element for error logging
 
 function initGL(canvas) {
     gl = null;
@@ -24,9 +24,8 @@ function initGL(canvas) {
         gl.depthFunc(gl.LEQUAL);
         // clear the color/depth buffers
         gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
-		
-		gl.disable(gl.CULL_FACE);
-		
+
+		// set the viewport
 		gl.viewport(0, 0, canvas.width, canvas.height);
     }
 }
@@ -44,7 +43,7 @@ function getSourceFromDOM(id) {
 	shaderSource = "";
 	currentChild = shaderScript.firstChild;
 
-	while(currentChild) {
+	while (currentChild) {
 		if (currentChild.nodeType == currentChild.TEXT_NODE) {
 		  shaderSource += currentChild.textContent;
 		}
