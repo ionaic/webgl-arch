@@ -97,6 +97,50 @@
 				oUv = uv;
 			}
 		</script>
+		<script id="outline-fs" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
+
+			uniform vec4 outlineColor;
+			
+			void main(void) {
+				gl_FragColor = outlineColor;
+			}
+		</script>
+		<script id="outline-vs" type="x-shader/x-vertex">
+			attribute vec3 position;
+			attribute vec3 normal;
+			attribute vec2 uv;
+			
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
+			
+			// model matrix (positioning in space of your vertex)
+			uniform mat4 modelMatrix;
+			// camera positioning
+			uniform mat4 viewMatrix;
+			// perspective matrix (perspective projection camera)
+			uniform mat4 perspectiveMatrix;
+
+			// uniform specifying how much to scale the mesh for an outline
+			uniform float outlineScale;
+			
+			void main(void) {
+				// pass normal, uv, and position through
+				oPosition = vec4(position, 1.0);
+				oNormal = normal;
+				oUv = uv;
+				
+				// scale the mesh uniformly to make it into an outline
+				oPosition = oPosition * outlineScale;
+				
+				// modify vertex pos by MVP (because col major PVM) matrix
+				gl_Position = perspectiveMatrix * viewMatrix * modelMatrix * oPosition;
+			}
+		</script>
     </head>
     <body onload="start();">
         <canvas id="glcanvas" width="640" height="480">

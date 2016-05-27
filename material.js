@@ -42,7 +42,12 @@ ShaderUniform.prototype = {
 		if (this.varValue instanceof Matrix) {
 			this.isMatrix = true;
 		}
-		
+		if (this.isMatrix) {
+			
+		}
+		else {
+			if (this.varNumber == 1)
+		}
 	}
 }
 
