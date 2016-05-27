@@ -16,9 +16,9 @@ VertexAttribute.prototype = {
 	}
 };
 
-function Texture(inName) {
+function Texture(inName, inSrcImg, inSrcName) {
 	this.name = inName || "";
-	
+	this.texture = gl.createTexture();
 }
 Texture.prototype = {
 	LoadFromDOM : function(domID) {
