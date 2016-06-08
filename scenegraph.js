@@ -2,7 +2,7 @@
 function Transform() {
 	this.position = $V([0,0,0,0]);
 	this.rotation = $V([0,0,0,0]);
-	this.scale = 1.0;
+	this.scale = 1.0; // only allow uniform scale
 }
 Transform.prototype = {
 	getEulerAngles : function() {
@@ -11,15 +11,24 @@ Transform.prototype = {
 	setEulerAngles : function(pitch, roll, yaw) {
 		// euler to quaternion
 	},
+	getRotationMatrix : function() {
+		
+	},
 	Translate : function(vec) {
 		
 	},
-	Rotate : function(vec) {
+	Rotate : function(angle, axis) {
 		
 	},
-	Scale : function(vec) {
+	RotateEuler : function(roll, pitch, yaw) {
 		
-	}
+	},
+	Scale : function(scalar) {
+		this.scale *= scalar;
+	},
+	GetModelMatrix : function() {
+		// return matrix transform
+	},
 }
 
 function SceneObject(inName, inMesh, inMaterial, inParent) {

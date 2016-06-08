@@ -54,7 +54,6 @@ function getSourceFromDOM(id) {
 }
 
 function LogError(rawMessage) {
-	// var message = rawMessage.replace(/\n/, "<br>", "gim");
 	var message = rawMessage;
 	if (LogElement != null) {
 		var text = document.createTextNode(message);

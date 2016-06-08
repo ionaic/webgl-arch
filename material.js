@@ -43,13 +43,125 @@ ShaderUniform.prototype = {
 			this.isMatrix = true;
 		}
 		if (this.isMatrix) {
-			
+			if (this.varNumber == null) {
+				this.varNumber = varValue.dimensions().rows || varValue.varValue.elements.length || varValue.length || 1;
+			}
+			switch(this.varNumber) {
+				case 2:
+					// floating type
+					if (this.varType == gl.FLOAT) {
+						gl.uniformMatrix2f(vthis.varLocation, this.varValue);
+					}
+					// integer type
+					else {
+						gl.uniformMatrix2iv(this.varLocation, this.varValue);
+					}
+					break;
+				case 3:
+					// floating type
+					if (this.varType == gl.FLOAT) {
+						gl.uniformMatrix3fv(this.varLocation, this.varValue);
+					}
+					// integer type
+					else {
+						gl.uniformMatrix3iv(this.varLocation, this.varValue);
+					}
+					break;
+				case 4:
+					// floating type
+					if (this.varType == gl.FLOAT) {
+						gl.uniformMatrix4fv(this.varLocation, this.varValue);
+					}
+					// integer type
+					else {
+						gl.uniformMatrix4iv(this.varLocation, this.varValue);
+					}
+					break;
+				default:
+					// unknown case, break
+					break;
+			}
 		}
 		else {
-			if (this.varNumber == 1)
+			if (this.varNumber == null) {
+				this.varNumber = varValue.elements.length || varValue.length || 1;
+			}
+			switch(this.varNumber) {
+				case 1:
+					// floating type
+					if (this.varType == gl.FLOAT) {
+						gl.uniform1f(this.varLocation, this.varValue);
+					}
+					// integer type
+					else {
+						gl.uniform1i(this.varLocation, this.varValue);
+					}
+					break;
+				case 2:
+					// floating type
+					if (this.varType == gl.FLOAT) {
+						gl.uniform2fv(this.varLocation, this.varValue);
+					}
+					// integer type
+					else {
+						gl.uniform2iv(this.varLocation, this.varValue);
+					}
+					break;
+				case 3:
+					// floating type
+					if (this.varType == gl.FLOAT) {
+						gl.uniform3fv(this.varLocation, this.varValue);
+					}
+					// integer type
+					else {
+						gl.uniform3iv(this.varLocation, this.varValue);
+					}
+					break;
+				case 4:
+					// floating type
+					if (this.varType == gl.FLOAT) {
+						gl.uniform4fv(this.varLocation, this.varValue);
+					}
+					// integer type
+					else {
+						gl.uniform4iv(this.varLocation, this.varValue);
+					}
+					break;
+				default:
+					// unknown case, break
+					break;
+			}
 		}
+	},
+	toString : function() {
+		return "{" + this.name + ": (Loc: " + this.varLocation + "), (Value:" + this.varValue + "), (Type: " + this.varType + "), (Number: " + this.varNumber + "), (IsMatrix: " + this.isMatrix + ")}";
 	}
 }
+function ShaderUniforms() {
+	this.modelMatrix = new ShaderUniform("modelMatrix", null, Matrix.I(4), gl.FLOAT, 4, true);
+	this.viewMatrix = new ShaderUniform("viewMatrix", null, Matrix.I(4), gl.FLOAT, 4, true);
+	this.projectionMatrix = new ShaderUniform("projectionMatrix", null, Matrix.I(4), gl.FLOAT, 4, true);
+}
+ShaderUniforms.prototype = {
+	setModelMatrix : function(inMat) {
+		this.modelMatrix.varValue = inMat;
+	},
+	setViewMatrix : function(inMat) {
+		this.viewMatrix.varValue = inMat;
+	},
+	setProjectionMatrix : function(inMat) {
+		this.projectionMatrix.varValue = inMat;
+	},
+	toString : function() {
+		var str = "";
+		for (var uniform in this) {
+			if (this[uniform] instanceof ShaderUniform) {
+				str += this[uniform].toString() + ";\n";
+			}
+		}
+		return str;
+	},
+};
 
 function Material(inShaders, inTextures) {
 	this.shaders = inShaders || [];
@@ -65,24 +177,50 @@ Material.prototype = {
 			this.shaders[idx].setMeshAttributes(meshobj);
 		}
 	},
-	setUniforms : function() {
-		// TODO need some sort of handling for multiple shader passes
-		this.shaders[0].setUniforms();
+	setModelViewProjection : function(model, view, projection) {
+		for (var idx = 0; idx < this.shaders.length; ++idx) {
+			this.shaders[idx].shaderUniforms.setModelMatrix(model);
+			this.shaders[idx].shaderUniforms.setViewMatrix(view);
+			this.shaders[idx].shaderUniforms.setProjectionMatrix(projection);
+		}
 	},
-	setAttributes : function(mesh) {
+	setModelMatrix : function(model) {
+		for (var idx = 0; idx < this.shaders.length; ++idx) {
+			this.shaders[idx].shaderUniforms.setModelMatrix(model);
+		}
+	},
+	setViewMatrix : function(model) {
+		for (var idx = 0; idx < this.shaders.length; ++idx) {
+			this.shaders[idx].shaderUniforms.setViewMatrix(view);
+		}
+	},
+	setProjectionMatrix : function(model) {
+		for (var idx = 0; idx < this.shaders.length; ++idx) {
+			this.shaders[idx].shaderUniforms.setProjectionMatrix(projection);
+		}
+	},
+	setUniforms : function(shaderIdx = 0) {
+		this.shaders[shaderIdx].setUniforms();
+	},
+	setAttributes : function(mesh, shaderIdx = 0) {
 		this.shaders[0].setMeshAttributes(mesh);
 	},
-	useMaterial : function() {
+	useMaterial : function(shaderIdx = 0) {
 		this.shaders[0].useShader();
 	},
-	draw : function() {
-		// TODO need some sort of registry so you cna batch call draw, 1 call to material.draw for all meshes using material
-		this.setUniforms();
-		this.setAttributes();
-		this.useMaterial();
-
-		for (var idx = 0; idx < arguments.length; ++idx) {
-			arguments[idx]._bindBuffers();
+	draw : function(mesh) {
+		// TODO need some sort of registry so you can batch call draw, 1 call to material.draw for all meshes using material
+		//for (var idx = 0; idx < arguments.length; ++idx) {
+		//	arguments[idx]._bindBuffers();
+		//}
+		for (var pass = 0; pass < this.shaders.length; ++pass) {
+			// setup for this shader pass
+			this.setUniforms(pass);
+			this.setAttributes(pass, mesh);
+			this.useMaterial(pass);
+			
+			// draw mesh with this shader configuration
+			mesh._drawMesh();
 		}
 	},
 	toString : function(full = false) {
@@ -104,7 +242,7 @@ ShaderAttributes.prototype = {
 		var str = "";
 		for (var attr in this) {
 			if (this[attr] instanceof VertexAttribute) {
-				str += this[attr].toString() + ";";
+				str += this[attr].toString() + ";\n";
 			}
 		}
 		return str;
@@ -119,10 +257,12 @@ ShaderAttributes.prototype = {
 	// },
 };
 
-function Shader(inName, inVertName, inFragName) {
+function Shader(inName, inVertName, inFragName, inVertSrc, inFragSrc) {
 	this.name = inName || ""; // shader program name
 	this.vertexName = inVertName || ""; // vertex shader name
 	this.fragmentName = inFragName || ""; // fragment shader name
+	this.vertexSource = inVertSrc || "";
+	this.fragmentSource = inFragSrc || "";
 	this.vertexAttributes = new ShaderAttributes(); // vertex attributes
 	this.program = gl.createProgram();
 	this.fragment = gl.createShader(gl.FRAGMENT_SHADER);
@@ -146,6 +286,10 @@ Shader.prototype = {
 	},
 	initShader : function() {
 		if (this.fragmentName != null) {
+			this.fragmentSource = getSourceFromDOM(this.fragmentName);
+		}
+		if (this.fragmentSource != null) {
+			LogError("Fragment Source: " + this.fragmentSource);
 			gl.shaderSource(this.fragment, getSourceFromDOM(this.fragmentName));
 			shaderCompileCheckErr(this.fragmentName, this.fragment);
 			
@@ -153,7 +297,11 @@ Shader.prototype = {
 			LogError("Attaching fragment shader.");
 		}
 		if (this.vertexName != null) {
-			gl.shaderSource(this.vertex, getSourceFromDOM(this.vertexName));
+			this.vertexSource = getSourceFromDOM(this.vertexName);
+		}
+		if (this.vertexSource != null) {
+			LogError("Vertex Source: " + this.vertexSource);
+			gl.shaderSource(this.vertex, this.vertexSource);
 			shaderCompileCheckErr(this.vertexName, this.vertex);
 			
 			gl.attachShader(this.program, this.vertex);
@@ -189,8 +337,26 @@ Shader.prototype = {
 		
 		LogError("Setting from mesh: " + meshobj.toString() + "\n" + this.vertexAttributes.toString());
 	},
+	getUniformLocations : function() {
+		for (var uniform in this.shaderUniforms) {
+			if (this.shaderUniforms[uniform] instanceof ShaderUniform) {
+				this.shaderUniforms[uniform].varLocation = gl.getUniformLocation(this.program, this.shaderUniforms[uniform].name);
+				LogError("Getting Uniform: " + this.shaderUniforms[uniform].toString());
+			}
+			else {
+				LogError("Uniform: " + uniform.toString() + " not instance of ShaderUniform");
+			}
+		}
+	},
 	setUniforms : function () {
-		
+		for (var uniform in this.shaderUniforms) {
+			if (this.shaderUniforms[uniform] instanceof ShaderUniform) {
+				this.shaderUniforms[uniform].setUniform();
+			}
+			else {
+				LogError("Uniform: " + uniform.toString() + " not instance of ShaderUniform");
+			}
+		}
 	},
 	getAttributeLocations : function() {
 		for (var attr in this.vertexAttributes) {
@@ -231,3 +397,37 @@ Shader.prototype = {
 		return this.name + ": vertex-->" + this.vertexName + "; fragment-->" + this.fragmentName + "; ";
 	},
 };
+
+var DefaultVert = "attribute vec3 position;\n" +
+	"attribute vec3 normal;\n" +
+	"attribute vec2 uv;\n" +
+	"\n" +
+	"varying vec4 oPosition;\n" +
+	"varying vec3 oNormal;\n" +
+	"varying vec2 oUv;\n" +
+	"\n" +
+	"// model matrix (positioning in space of your vertex)\n" +
+	"uniform mat4 modelMatrix;\n" +
+	"// camera positioning\n" +
+	"uniform mat4 viewMatrix;\n" +
+	"// perspective matrix (perspective projection camera)\n" +
+	"uniform mat4 projectionMatrix;\n" +
+	"\n" +
+	"void main(void) {\n" +
+	"	// pass normal, uv, and position through\n" +
+	"	oPosition = vec4(position, 1.0);\n" +
+	"	oNormal = normal;\n" +
+	"	oUv = uv;\n" +
+	"	// modify vertex pos by MVP (because col major PVM) matrix\n" +
+	"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;\n" +
+	"}\n";
+var DefaultFrag = "precision mediump float;\n" +
+	"varying vec4 oPosition;\n" +
+	"varying vec3 oNormal;\n" +
+	"varying vec2 oUv;\n" +
+	"\n" +
+	"void main(void) {\n" +
+	"	gl_FragColor = outlineColor;\n" +
+	"}\n";
+var DefaultShader = new Shader("Default", null, null, DefaultVert, DefaultFrag);
+var DefaultMaterial = new Material(DefaultShader);

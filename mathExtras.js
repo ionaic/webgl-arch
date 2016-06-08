@@ -8,6 +8,39 @@ Vector.prototype.sqrMagnitude = function() {
 Vector.prototype.magnitude = Vector.prototype.modulus;
 Vector.prototype.normalize = Vector.prototype.toUnitVector;
 
+Quaternion.prototype = Vector.prototype;
+
+// Quaternion.prototype.mul = function() {
+	
+// }
+
+function QuaternionToEuler(quat) {
+	
+}
+
+function EulerToQuaternion(euler) {
+	
+}
+
+function QuaternionToMatrix(quat) {
+	
+}
+
+function MatrixToQuaternion(mat) {
+	
+}
+
+function AxisAngleToQuaternion(axis, angle) {
+	var qv = axis.x(Math.sin(angle / 2));
+	var qs = Math.cos(angle / 2);
+	var quat = new Quaternion(qv.elements);
+	quat.elements.push(qs);
+	return quat;
+}
+
+Quaternion.ToEuler = function() { return QuaternionToEuler(this); };
+Quaternion.ToMatrix = function() {return QuaternionToMatrix(this); };
+
 function TriangulatePolygon(vertArray, ccw=true) {
 	// triangulate a hole-less polygon given vertex set
 	// function assumes that the input is a polygon to be split into triangles and that the vertices are in CCW or CW order as opposed to vertex soup
