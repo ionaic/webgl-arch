@@ -205,7 +205,7 @@ function MatrixToQuaternion(mat) {
 		var j = NEXT[i];
 		var k = NEXT[j];
 		
-		var s = Math.sqrt((mat.e(i,i) - (mat.e(j,j) + mat.(k,k))) + 1.0);
+		var s = Math.sqrt((mat.e(i,i) - (mat.e(j,j) + mat.e(k,k))) + 1.0);
 		
 		q[i] = s * 0.5;
 		
