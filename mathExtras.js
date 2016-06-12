@@ -128,7 +128,7 @@ Quaternion.prototype = {
 	},
 	rotate : function(v) {
 		// rotate a vector v using this quaternion
-		// TODO
+		return q.mul(new Quaternion(v, 0)).mul(q.inverse());
 	},
 }
 
