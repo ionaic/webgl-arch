@@ -10,8 +10,29 @@ Vector.prototype.normalize = Vector.prototype.toUnitVector;
 
 // Quaternion type
 function Quaternion(inQv, inQs) {
-	this.qv = inQv || Vector.Zero(3);
-	this.qs = inQs || 0.0;
+	if (inQv instanceof Vector) {
+		if (inQv.dimensions() > 3) {
+			this.qv = new Vector(inQv.elements.slice(0,3));
+			this.qs = inQv.elements[4];
+		}
+		else {
+			this.qv = inQv || Vector.Zero(3);
+			this.qs = inQs || 0.0;
+		}
+	}
+	else {
+		if (inQv.length > 3) {
+			// grab the first 4 of the input array as qv, qs
+			// allows constructing as new Quaternion([x, y, z, w])
+			this.qv = new Vector(inQv.slice(0, 3));
+			this.qs = inQv[3];
+		}
+		else {
+			// make a vector out of the input array
+			this.qv = new Vector(inQv);
+			this.qs = inQs;
+		}
+	}
 }
 Quaternion.prototype = Vector.prototype;
 Quaternion.prototype = {
@@ -53,11 +74,19 @@ Quaternion.prototype = {
 	asVector : function() {
 		var tmp = new Vector(this.qv);
 		tmp.elements.push(qs);
+		return tmp;
 	},
 	fromVector : function(vec) {
 		// [qv qs]
-		this.qv = new Vector(vec.e(0), vec.e(1), vec.e(2));
-		this.qs = vec.e(3);
+		if (vec instanceof Vector) {
+			this.qv = new Vector([vec.e(0), vec.e(1), vec.e(2)]);
+			this.qs = vec.e(3);
+		}
+		else {
+			this.qv = new Vector([vec[0], vec[1], vec[2]]);
+			this.qs = vec[3];
+		}
+		return this;
 	},
 	q0 : function(val) {
 		if (val) {
@@ -85,6 +114,10 @@ Quaternion.prototype = {
 	},
 	slerp : function(inQuat, beta) {
 		// TODO
+		var p = this.asVector();
+		var q = this.asVector();
+
+		return new Quaternion(SLERP(p, q, beta));
 	},
 	conjugate : function() {
 		return new Quaternion(this.qv * -1, this.qs);
@@ -97,6 +130,14 @@ Quaternion.prototype = {
 		// rotate a vector v using this quaternion
 		// TODO
 	},
+}
+
+function SLERP(p, q, beta) {
+	var theta = Math.acos(p.dot(q));
+	var wp = (Math.sin((1-beta) * theta)) / Math.sin(theta);
+	var wq = Math.sin(beta * theta) / Math.sin(theta);
+	
+	return wp * p + wq * q;
 }
 
 function QuaternionToEuler(quat) {
@@ -122,9 +163,7 @@ function EulerToQuaternion(euler) {
 		Math.cos(x) * Math.sin(y) * Math.cos(z) - Math.sin(x) * Math.cos(y) + Math.sin(z),
 		Math.sin(x) * Math.cos(y) * Math.sin(z) - Math.sin(x) * Math.sin(y) + Math.cos(z)
 	];
-	var quat = new Quaternion();
-	quat.fromVector(q);
-	return quat;
+	return new Quaternion(q);
 }
 
 function QuaternionToMatrix(quat) {
