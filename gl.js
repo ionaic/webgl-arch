@@ -27,6 +27,8 @@ function initGL(canvas) {
 
 		// set the viewport
 		gl.viewport(0, 0, canvas.width, canvas.height);
+		
+		Material.initDefaultMaterial();
     }
 }
 

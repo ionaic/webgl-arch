@@ -50,31 +50,31 @@ ShaderUniform.prototype = {
 				case 2:
 					// floating type
 					if (this.varType == gl.FLOAT) {
-						gl.uniformMatrix2f(vthis.varLocation, this.varValue);
+						gl.uniformMatrix2f(vthis.varLocation, false, this.varValue.flatten() || this.varValue);
 					}
 					// integer type
 					else {
-						gl.uniformMatrix2iv(this.varLocation, this.varValue);
+						gl.uniformMatrix2iv(this.varLocation, false, this.varValue.flatten() || this.varValue);
 					}
 					break;
 				case 3:
 					// floating type
 					if (this.varType == gl.FLOAT) {
-						gl.uniformMatrix3fv(this.varLocation, this.varValue);
+						gl.uniformMatrix3fv(this.varLocation, false, this.varValue.flatten() || this.varValue);
 					}
 					// integer type
 					else {
-						gl.uniformMatrix3iv(this.varLocation, this.varValue);
+						gl.uniformMatrix3iv(this.varLocation, false, this.varValue.flatten() || this.varValue);
 					}
 					break;
 				case 4:
 					// floating type
 					if (this.varType == gl.FLOAT) {
-						gl.uniformMatrix4fv(this.varLocation, this.varValue);
+						gl.uniformMatrix4fv(this.varLocation, false, this.varValue.flatten() || this.varValue);
 					}
 					// integer type
 					else {
-						gl.uniformMatrix4iv(this.varLocation, this.varValue);
+						gl.uniformMatrix4iv(this.varLocation, false, this.varValue.flatten() || this.varValue);
 					}
 					break;
 				default:
@@ -194,8 +194,10 @@ Material.prototype = {
 			this.shaders[idx].shaderUniforms.setViewMatrix(view);
 		}
 	},
-	setProjectionMatrix : function(model) {
+	setProjectionMatrix : function(projection) {
 		for (var idx = 0; idx < this.shaders.length; ++idx) {
+			LogError("Set Projection: " + this.shaders[idx]);
+			LogError("Setting projection matrix for: " + this.shaders[idx].shaderUniforms);
 			this.shaders[idx].shaderUniforms.setProjectionMatrix(projection);
 		}
 	},
@@ -264,9 +266,10 @@ function Shader(inName, inVertName, inFragName, inVertSrc, inFragSrc) {
 	this.vertexSource = inVertSrc || "";
 	this.fragmentSource = inFragSrc || "";
 	this.vertexAttributes = new ShaderAttributes(); // vertex attributes
-	this.program = gl.createProgram();
-	this.fragment = gl.createShader(gl.FRAGMENT_SHADER);
-	this.vertex = gl.createShader(gl.VERTEX_SHADER);
+	this.shaderUniforms = new ShaderUniforms(); // shader uniforms
+	this.program = gl.createProgram() || null;
+	this.fragment = gl.createShader(gl.FRAGMENT_SHADER) || null;
+	this.vertex = gl.createShader(gl.VERTEX_SHADER) || null;
 	this.uniforms = {};
 	
 	// hook functions to allow user to call GL calls before and after each shader
@@ -285,6 +288,16 @@ Shader.prototype = {
 		this.uniforms[name].name = name;
 	},
 	initShader : function() {
+		if (this.program == null) {
+			this.program = gl.createProgram();
+		}
+		if (this.fragment == null) {
+			this.fragment = gl.createShader(gl.FRAGMENT_SHADER);
+		}
+		if (this.vertex == null) {
+			this.vertex = gl.createShader(gl.VERTEX_SHADER);
+		}
+		
 		if (this.fragmentName != null) {
 			this.fragmentSource = getSourceFromDOM(this.fragmentName);
 		}
@@ -398,36 +411,39 @@ Shader.prototype = {
 	},
 };
 
-var DefaultVert = "attribute vec3 position;\n" +
-	"attribute vec3 normal;\n" +
-	"attribute vec2 uv;\n" +
-	"\n" +
-	"varying vec4 oPosition;\n" +
-	"varying vec3 oNormal;\n" +
-	"varying vec2 oUv;\n" +
-	"\n" +
-	"// model matrix (positioning in space of your vertex)\n" +
-	"uniform mat4 modelMatrix;\n" +
-	"// camera positioning\n" +
-	"uniform mat4 viewMatrix;\n" +
-	"// perspective matrix (perspective projection camera)\n" +
-	"uniform mat4 projectionMatrix;\n" +
-	"\n" +
-	"void main(void) {\n" +
-	"	// pass normal, uv, and position through\n" +
-	"	oPosition = vec4(position, 1.0);\n" +
-	"	oNormal = normal;\n" +
-	"	oUv = uv;\n" +
-	"	// modify vertex pos by MVP (because col major PVM) matrix\n" +
-	"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;\n" +
-	"}\n";
-var DefaultFrag = "precision mediump float;\n" +
-	"varying vec4 oPosition;\n" +
-	"varying vec3 oNormal;\n" +
-	"varying vec2 oUv;\n" +
-	"\n" +
-	"void main(void) {\n" +
-	"	gl_FragColor = outlineColor;\n" +
-	"}\n";
-var DefaultShader = new Shader("Default", null, null, DefaultVert, DefaultFrag);
-var DefaultMaterial = new Material(DefaultShader);
+
+Material.initDefaultMaterial = function() {
+	Material.DefaultVert = "attribute vec3 position;\n" +
+		"attribute vec3 normal;\n" +
+		"attribute vec2 uv;\n" +
+		"\n" +
+		"varying vec4 oPosition;\n" +
+		"varying vec3 oNormal;\n" +
+		"varying vec2 oUv;\n" +
+		"\n" +
+		"// model matrix (positioning in space of your vertex)\n" +
+		"uniform mat4 modelMatrix;\n" +
+		"// camera positioning\n" +
+		"uniform mat4 viewMatrix;\n" +
+		"// perspective matrix (perspective projection camera)\n" +
+		"uniform mat4 projectionMatrix;\n" +
+		"\n" +
+		"void main(void) {\n" +
+		"	// pass normal, uv, and position through\n" +
+		"	oPosition = vec4(position, 1.0);\n" +
+		"	oNormal = normal;\n" +
+		"	oUv = uv;\n" +
+		"	// modify vertex pos by MVP (because col major PVM) matrix\n" +
+		"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;\n" +
+		"}\n";
+	Material.DefaultFrag = "precision mediump float;\n" +
+		"varying vec4 oPosition;\n" +
+		"varying vec3 oNormal;\n" +
+		"varying vec2 oUv;\n" +
+		"\n" +
+		"void main(void) {\n" +
+		"	gl_FragColor = outlineColor;\n" +
+		"}\n";
+	Material.DefaultShader = new Shader("Default", null, null, Material.DefaultVert, Material.DefaultFrag);
+	Material.DefaultMaterial = new Material(Material.DefaultShader);
+}
