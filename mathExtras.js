@@ -136,21 +136,21 @@ Quaternion.prototype = {
 	},
 	q0 : function(val) {
 		if (val) {
-			this.qv[0] = val;
+			this.qv.elements[0] = val;
 		}
-		return this.qv[0];
+		return this.qv.elements[0];
 	},
 	q1 : function(val) {
 		if (val) {
-			this.qv[1] = val;
+			this.qv.elements[1] = val;
 		}
-		return this.qv[1];
+		return this.qv.elements[1];
 	},
 	q2 : function(val) {
 		if (val) {
-			this.qv[2] = val;
+			this.qv.elements[2] = val;
 		}
-		return this.qv[2];
+		return this.qv.elements[2];
 	},
 	q3 : function(val) {
 		if (val) {
@@ -191,15 +191,16 @@ function SLERP(p, q, beta) {
 }
 
 Quaternion.QuaternionToEuler = function(quat) {
-	var q0 = quat.q0(),
-		q1 = quat.q1(),
-		q2 = quat.q2(),
-		q3 = quat.q3();
-	return $V([
-		Math.atan2((2 * (q0 * q1 + q2 * q3)), (1 - 2(q1 * q1 + q2 * q2))) * RAD2DEG,
+	var q0 = quat.q3(),
+		q1 = quat.q0(),
+		q2 = quat.q1(),
+		q3 = quat.q2();
+		LogError("InQuat: " + quat);
+	return [
+		Math.atan2((2 * (q0 * q1 + q2 * q3)), (1 - 2 * (q1 * q1 + q2 * q2))) * RAD2DEG,
 		Math.asin(2 * (q0 * q2 - q3 * q1)) * RAD2DEG,
 		Math.atan2(2 * (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3)) * RAD2DEG
-	]);
+	];
 }
 
 Quaternion.EulerToQuaternion = function(euler) {

@@ -34,6 +34,7 @@
 				var axis = $V([0, 0, 1]);
 				LogError("Quat: " + Quaternion.EulerToQuaternion([0, 0, 10]));
 				LogError("Desired Quat: " + Quaternion.AxisAngleToQuaternion(axis, 10));
+				LogError("QuatToEuler: " + JSON.stringify(Quaternion.QuaternionToEuler(Quaternion.EulerToQuaternion([0, 0, 10]))));
 				
 				function update() {
 					// clear the color/depth buffers
