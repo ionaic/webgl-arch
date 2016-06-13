@@ -19,16 +19,32 @@
 				
 				var testSquare = new SceneObject("Square", Mesh.createSquareMesh(1.0, $V([0, 0, 1]), false));
 				testSquare.components.mesh._packArrays();
-				testSquare.components.material.addShader("basic", "shader-vs", "shader-fs");
+				testSquare.components.material.addShader(Material.DefaultShader);
 				Scene.addChild(testSquare);
 				
 				testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
 				//testSquare.components.transform.RotateEuler(0, 0, 0);
-				LogError("Model Matrix: " + JSON.stringify(testSquare.components.transform.GetModelMatrix()));
+				LogError("Model Matrix: " + JSON.stringify(testSquare.components.transform.GetModelMatrix().elements));
 				
 				testSquare.components.material.setProjectionMatrix(makePerspective(45, 640.0/480.0, 0.1, 100.0));
 
 				Scene.draw();
+				
+				var lastTime = Date.now();
+				var axis = $V([0, 0, 1]);
+				
+				function update() {
+					// clear the color/depth buffers
+					gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+					var curTime = Date.now();
+					var deltaTime = (curTime - lastTime) / 1000; // time given is ms, get in seconds
+					lastTime = curTime;
+					var amount = 10 * deltaTime;
+					LogError("DT: " + deltaTime);
+					testSquare.components.transform.Rotate(axis, amount);
+					Scene.draw();
+				}
+				window.setInterval(update, 1000/30);
             }
         </script>
 		<script id="shader-fs" type="x-shader/x-fragment">
@@ -116,6 +132,6 @@
         <canvas id="glcanvas" width="640" height="480">
             Browser does not support the <code>&lt;canvas&gt;</code> element.
         </canvas>
-		<div id="err_log"></div>
+		<div id="err_log" style="overflow: scroll; height: 30em"></div>
     </body>
 </html>

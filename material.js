@@ -170,7 +170,7 @@ function Material(inShaders, inTextures) {
 Material.prototype = {
 	addShader : function(inShaderName, inVertName, inFragName) {
 		if (inShaderName instanceof Shader) {
-			// allow adding of 
+			// allow adding of existing shaders
 			this.shaders.push(inShaderName);
 		}
 		else {
@@ -202,8 +202,6 @@ Material.prototype = {
 	},
 	setProjectionMatrix : function(projection) {
 		for (var idx = 0; idx < this.shaders.length; ++idx) {
-			LogError("Set Projection: " + this.shaders[idx]);
-			LogError("Setting projection matrix for: " + this.shaders[idx].shaderUniforms);
 			this.shaders[idx].shaderUniforms.setProjectionMatrix(projection);
 		}
 	},
@@ -355,14 +353,11 @@ Shader.prototype = {
 		this.vertexAttributes.uv.varBuffer = meshobj.uvBuffer;
 		this.vertexAttributes.uv.varType = gl.FLOAT;
 		this.vertexAttributes.uv.varNumber = 2;
-		
-		LogError("Setting from mesh: " + meshobj.toString() + "\n" + this.vertexAttributes.toString());
 	},
 	getUniformLocations : function() {
 		for (var uniform in this.shaderUniforms) {
 			if (this.shaderUniforms[uniform] instanceof ShaderUniform) {
 				this.shaderUniforms[uniform].varLocation = gl.getUniformLocation(this.program, this.shaderUniforms[uniform].name);
-				LogError("Getting Uniform: " + this.shaderUniforms[uniform].toString());
 			}
 			else {
 				if (this.shaderUniforms[uniform] instanceof Function) {
@@ -377,7 +372,6 @@ Shader.prototype = {
 		this.getUniformLocations();
 		for (var uniform in this.shaderUniforms) {
 			if (this.shaderUniforms[uniform] instanceof ShaderUniform) {
-				LogError("Setting uniform: " + this.shaderUniforms[uniform].toString());
 				this.shaderUniforms[uniform].setUniform();
 			}
 			else {
@@ -392,7 +386,6 @@ Shader.prototype = {
 		for (var attr in this.vertexAttributes) {
 			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
 				this.vertexAttributes[attr].varLocation = gl.getAttribLocation(this.program, this.vertexAttributes[attr].name);
-				LogError("Getting Attribute: " + this.vertexAttributes[attr].toString());
 			}
 			else {
 				if (this.vertexAttributes[attr] instanceof Function) {
@@ -406,7 +399,6 @@ Shader.prototype = {
 		for (var attr in this.vertexAttributes) {
 			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
 				gl.enableVertexAttribArray(this.vertexAttributes[attr].varLocation);
-				LogError("Using Attribute: " + this.vertexAttribtues[attr].toString());
 			}
 			else {
 				if (this.vertexAttributes[attr] instanceof Function) {
@@ -420,7 +412,6 @@ Shader.prototype = {
 		gl.useProgram(this.program);
 		for (var attr in this.vertexAttributes) {
 			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
-				LogError("Enabling attribute: " + this.vertexAttributes[attr].toString());
 				gl.enableVertexAttribArray(this.vertexAttributes[attr].varLocation);
 				gl.bindBuffer(gl.ARRAY_BUFFER, this.vertexAttributes[attr].varBuffer);
 				// because i always forget what order the parameters go:

@@ -1,5 +1,8 @@
 // math utility functions
 
+var RAD2DEG = 180 / Math.PI;
+var DEG2RAD = Math.PI / 180;
+
 // Aliases for sylvester functions to more familiar names, also adding a sqrMagnitude function
 Vector.prototype.sqrMagnitude = function() {
 	// inner product with itself is sqrmagnitude
@@ -56,11 +59,8 @@ Matrix.prototype.idx = function(i, j) {
 function Quaternion(inQv, inQs) {
 	if (inQv instanceof Vector) {
 		if (inQv.dimensions() > 3) {
-			LogError("In vec: " + JSON.stringify(inQv));
-			LogError("Qv sliced: " + JSON.stringify(inQv.elements.slice(0,3)));
 			this.qv = $V(inQv.elements.slice(0,3));
 			this.qs = inQv.elements[3];
-			LogError("Qs : " + inQv.elements[3]);
 		}
 		else {
 			this.qv = inQv || Vector.Zero(3);
@@ -76,7 +76,6 @@ function Quaternion(inQv, inQs) {
 		}
 		else {
 			// make a vector out of the input array
-			LogError("Qv: " + JSON.stringify(inQv));
 			this.qv = $V(inQv || [0,0,0]);
 			this.qs = inQs || 0;
 		}
@@ -119,10 +118,8 @@ Quaternion.prototype = {
 		return new Quaternion(this.qv.x(k), this.qs * k);
 	},
 	toVector : function() {
-		LogError("QV in vec conversion: " + JSON.stringify(this.qv));
 		var tmp = $V(this.qv.elements);
 		tmp.elements.push(this.qs);
-		LogError("OutVec: " + JSON.stringify(tmp));
 		return tmp;
 	},
 	fromVector : function(vec) {
@@ -177,9 +174,7 @@ Quaternion.prototype = {
 	},
 	rotate : function(v) {
 		// rotate a vector v using this quaternion
-		LogError("Rotating " + JSON.stringify(v.ensure4D()) + " by quat: " + this.toString());
 		var vquat = new Quaternion(v.ensure4D());
-		LogError("Vquat " + vquat);
 		return this.mul(vquat).mul(this.inverse()).toVector();
 	},
 	toString : function() {
@@ -201,16 +196,16 @@ Quaternion.QuaternionToEuler = function(quat) {
 		q2 = quat.q2(),
 		q3 = quat.q3();
 	return $V([
-		Math.atan2((2 * (q0 * q1 + q2 * q3)), (1 - 2(q1 * q1 + q2 * q2))),
-		Math.asin(2 * (q0 * q2 - q3 * q1)),
-		Math.atan2(2 * (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3))
+		Math.atan2((2 * (q0 * q1 + q2 * q3)), (1 - 2(q1 * q1 + q2 * q2))) * RAD2DEG,
+		Math.asin(2 * (q0 * q2 - q3 * q1)) * RAD2DEG,
+		Math.atan2(2 * (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3)) * RAD2DEG
 	]);
 }
 
 Quaternion.EulerToQuaternion = function(euler) {
-	var x = euler[0] / 2;
-	var y = euler[1] / 2;
-	var z = euler[2] / 2;
+	var x = euler[0] / 2 * DEG2RAD;
+	var y = euler[1] / 2 * DEG2RAD;
+	var z = euler[2] / 2 * DEG2RAD;
 	
 	var q = [
 		Math.cos(x) * Math.cos(y) * Math.cos(z) + Math.sin(x) * Math.sin(y) + Math.sin(z),
@@ -278,6 +273,11 @@ Quaternion.MatrixToQuaternion = function(mat) {
 }
 
 Quaternion.AxisAngleToQuaternion = function(axis, angle) {
+	var qv = axis.x(Math.sin(angle / 2 * DEG2RAD));
+	var qs = Math.cos(angle / 2);
+	return (new Quaternion(qv, qs)).normalize();
+}
+Quaternion.AxisAngleRadToQuaternion = function(axis, angle) {
 	var qv = axis.x(Math.sin(angle / 2));
 	var qs = Math.cos(angle / 2);
 	return (new Quaternion(qv, qs)).normalize();

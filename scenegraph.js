@@ -103,12 +103,11 @@ SceneObject.prototype = {
 		// call draw function recursively through the tree
 		if (this.children != null && this.children.length > 0) {
 			for (var idx = 0; idx < this.children.length; ++idx) {
-				LogError("Child of " + this.name + " (" + (idx + 1) + "/" + this.children.length + "): " + this.children[idx].toString());
 				this.children[idx].draw();
 			}
 		}
 		if (!this.components.mesh.hasMesh()) {
-			LogError("No mesh, skipping draw for object " + this.name);
+			// LogError("No mesh, skipping draw for object " + this.name);
 			return;
 		}
 		this.components.material.setModelMatrix(this.components.transform.GetModelMatrix());
