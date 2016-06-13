@@ -164,12 +164,18 @@ ShaderUniforms.prototype = {
 };
 
 function Material(inShaders, inTextures) {
-	this.shaders = inShaders || [];
-	this.textures = inTextures || [];
+	this.shaders = [].concat(inShaders || []);
+	this.textures = [].concat(inTextures || []);
 }
 Material.prototype = {
 	addShader : function(inShaderName, inVertName, inFragName) {
-		this.shaders.push(new Shader(inShaderName, inVertName, inFragName));
+		if (inShaderName instanceof Shader) {
+			// allow adding of 
+			this.shaders.push(inShaderName);
+		}
+		else {
+			this.shaders.push(new Shader(inShaderName, inVertName, inFragName));
+		}
 	},
 	initShaders : function (meshobj) {
 		for (var idx = 0; idx < this.shaders.length; ++idx) {

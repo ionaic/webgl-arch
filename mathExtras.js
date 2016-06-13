@@ -7,13 +7,60 @@ Vector.prototype.sqrMagnitude = function() {
 }
 Vector.prototype.magnitude = Vector.prototype.modulus;
 Vector.prototype.normalize = Vector.prototype.toUnitVector;
+Vector.prototype.idx = function(index) {
+	if (index > this.elements.length || index < 0) {
+		return null;
+	}
+	return this.elements[index];
+}
+Vector.prototype.ensure4D = function() {
+	if (this.elements.length > 4) {
+		this.elements = this.elements.slice(0, 4);
+		return this;
+	}
+	
+	while (this.elements.length < 4) {
+		this.elements.push(0);
+	}
+	return this;
+}
+Vector.prototype.ensure3D = function() {
+	if (this.elements.length > 3) {
+		this.elements = this.elements.slice(0, 3);
+		return this;
+	}
+	
+	while (this.elements.length < 3) {
+		this.elements.push(0);
+	}
+	return this;
+}
+Vector.prototype.homogenize = function() {
+	this.ensure4D();
+	if (this.elements[3] != 0) {
+		this.x(1 / this.elements[3]);
+	}
+	else {
+		this.elements[3] = 1;
+	}
+	return this;
+}
+Matrix.prototype.idx = function(i, j) {
+	if (i > this.rows() || j > this.cols() || i < 0 || j < 0) {
+		return null;
+	}
+	return this.elements[i][j];
+}
 
 // Quaternion type
 function Quaternion(inQv, inQs) {
 	if (inQv instanceof Vector) {
 		if (inQv.dimensions() > 3) {
-			this.qv = new Vector(inQv.elements.slice(0,3));
-			this.qs = inQv.elements[4];
+			LogError("In vec: " + JSON.stringify(inQv));
+			LogError("Qv sliced: " + JSON.stringify(inQv.elements.slice(0,3)));
+			this.qv = $V(inQv.elements.slice(0,3));
+			this.qs = inQv.elements[3];
+			LogError("Qs : " + inQv.elements[3]);
 		}
 		else {
 			this.qv = inQv || Vector.Zero(3);
@@ -24,17 +71,17 @@ function Quaternion(inQv, inQs) {
 		if (inQv.length > 3) {
 			// grab the first 4 of the input array as qv, qs
 			// allows constructing as new Quaternion([x, y, z, w])
-			this.qv = new Vector(inQv.slice(0, 3));
+			this.qv = $V(inQv.slice(0, 3));
 			this.qs = inQv[3];
 		}
 		else {
 			// make a vector out of the input array
-			this.qv = new Vector(inQv);
-			this.qs = inQs;
+			LogError("Qv: " + JSON.stringify(inQv));
+			this.qv = $V(inQv || [0,0,0]);
+			this.qs = inQs || 0;
 		}
 	}
 }
-Quaternion.prototype = Vector.prototype;
 Quaternion.prototype = {
 	copy : function() {
 		return new Quaternion(this.qv, this.qs);
@@ -69,21 +116,23 @@ Quaternion.prototype = {
 	x : this.mul,
 	scale : function(k) {
 		// multiply by a scalar
-		return new Quaternion(this.qv.mul(k), this.qs * k);
+		return new Quaternion(this.qv.x(k), this.qs * k);
 	},
 	toVector : function() {
-		var tmp = new Vector(this.qv);
-		tmp.elements.push(qs);
+		LogError("QV in vec conversion: " + JSON.stringify(this.qv));
+		var tmp = $V(this.qv.elements);
+		tmp.elements.push(this.qs);
+		LogError("OutVec: " + JSON.stringify(tmp));
 		return tmp;
 	},
 	fromVector : function(vec) {
 		// [qv qs]
 		if (vec instanceof Vector) {
-			this.qv = new Vector([vec.e(0), vec.e(1), vec.e(2)]);
-			this.qs = vec.e(3);
+			this.qv = $V([vec.idx(0), vec.idx(1), vec.idx(2)]);
+			this.qs = vec.idx(3);
 		}
 		else {
-			this.qv = new Vector([vec[0], vec[1], vec[2]]);
+			this.qv = $V([vec[0], vec[1], vec[2]]);
 			this.qs = vec[3];
 		}
 		return this;
@@ -120,7 +169,7 @@ Quaternion.prototype = {
 		return new Quaternion(SLERP(p, q, beta));
 	},
 	conjugate : function() {
-		return new Quaternion(this.qv * -1, this.qs);
+		return new Quaternion(this.qv.x(-1), this.qs);
 	},
 	inverse : function() {
 		var qstar = this.conjugate();
@@ -128,8 +177,14 @@ Quaternion.prototype = {
 	},
 	rotate : function(v) {
 		// rotate a vector v using this quaternion
-		return q.mul(new Quaternion(v, 0)).mul(q.inverse()).toVector();
+		LogError("Rotating " + JSON.stringify(v.ensure4D()) + " by quat: " + this.toString());
+		var vquat = new Quaternion(v.ensure4D());
+		LogError("Vquat " + vquat);
+		return this.mul(vquat).mul(this.inverse()).toVector();
 	},
+	toString : function() {
+		return "[(" + this.qv.elements + ") " + this.qs + "]";
+	}
 }
 
 function SLERP(p, q, beta) {
@@ -140,19 +195,19 @@ function SLERP(p, q, beta) {
 	return wp * p + wq * q;
 }
 
-function QuaternionToEuler(quat) {
+Quaternion.QuaternionToEuler = function(quat) {
 	var q0 = quat.q0(),
 		q1 = quat.q1(),
 		q2 = quat.q2(),
 		q3 = quat.q3();
-	return new Vector([
+	return $V([
 		Math.atan2((2 * (q0 * q1 + q2 * q3)), (1 - 2(q1 * q1 + q2 * q2))),
 		Math.asin(2 * (q0 * q2 - q3 * q1)),
 		Math.atan2(2 * (q0 * q3 + q1 * q2), 1 - 2 * (q2 * q2 + q3 * q3))
 	]);
 }
 
-function EulerToQuaternion(euler) {
+Quaternion.EulerToQuaternion = function(euler) {
 	var x = euler[0] / 2;
 	var y = euler[1] / 2;
 	var z = euler[2] / 2;
@@ -163,24 +218,24 @@ function EulerToQuaternion(euler) {
 		Math.cos(x) * Math.sin(y) * Math.cos(z) - Math.sin(x) * Math.cos(y) + Math.sin(z),
 		Math.sin(x) * Math.cos(y) * Math.sin(z) - Math.sin(x) * Math.sin(y) + Math.cos(z)
 	];
-	return new Quaternion(q);
+	return (new Quaternion(q)).normalize();
 }
 
-function QuaternionToMatrix(quat) {
+Quaternion.QuaternionToMatrix = function(quat) {
 	var x = quat.q0();
 	var y = quat.q1();
 	var z = quat.q2();
 	var w = quat.q3();
 	
-	return new Matrix(	[1 - 2*y*y - 2*z*z, 2*x*y + 2*z*w, 2*x*z - 2*y*w],
-						[2*x*y - 2*z*w, 1 - 2*x*x - 2*z*z, 2*y*z + 2*x*w],
-						[2*x*z - 2*y*w, 2*y*z - 2*x*w, 1 - 2*x*x - 2*y*y]);
+	return $M(	[[1 - 2*y*y - 2*z*z, 2*x*y + 2*z*w, 2*x*z - 2*y*w],
+				[2*x*y - 2*z*w, 1 - 2*x*x - 2*z*z, 2*y*z + 2*x*w],
+				[2*x*z - 2*y*w, 2*y*z - 2*x*w, 1 - 2*x*x - 2*y*y]]);
 }
 
-function MatrixToQuaternion(mat) {
+Quaternion.MatrixToQuaternion = function(mat) {
 	// adapted from Game Engine Architecture by Jason Gregory
 	var q = [0, 0, 0, 0];
-	var trace = mat.e(0,0) + mat.e(1,1) + mat.e(2,2);
+	var trace = mat.idx(0,0) + mat.idx(1,1) + mat.idx(2,2);
 	
 	// check diagonal
 	if (trace > 0.0) {
@@ -188,24 +243,24 @@ function MatrixToQuaternion(mat) {
 		q[3] = s * 0.5;
 		
 		var t = 0.5 / s;
-		q[0] = (mat.e(2,1) - mat.e(1,2)) * t;
-		q[1] = (mat.e(0,2) - mat.e(2,0)) * t;
-		q[2] = (mat.e(1,0) - mat.e(0,1)) * t;
+		q[0] = (mat.idx(2,1) - mat.idx(1,2)) * t;
+		q[1] = (mat.idx(0,2) - mat.idx(2,0)) * t;
+		q[2] = (mat.idx(1,0) - mat.idx(0,1)) * t;
 	}
 	else {
 		// diagonal is negative
 		var i = 0;
-		if (mat.e(1,1) > mat.e(0,0)) {
+		if (mat.idx(1,1) > mat.idx(0,0)) {
 			i = 1;
 		}
-		if (mat.e(2,2) > mat.e(i,i)) {
+		if (mat.idx(2,2) > mat.idx(i,i)) {
 			i = 2;
 		}
 		var NEXT = [1, 2, 0];
 		var j = NEXT[i];
 		var k = NEXT[j];
 		
-		var s = Math.sqrt((mat.e(i,i) - (mat.e(j,j) + mat.e(k,k))) + 1.0);
+		var s = Math.sqrt((mat.idx(i,i) - (mat.idx(j,j) + mat.idx(k,k))) + 1.0);
 		
 		q[i] = s * 0.5;
 		
@@ -214,22 +269,22 @@ function MatrixToQuaternion(mat) {
 			t = 0.5 / s;
 		}
 		
-		q[3] = (mat.e(k,j) - mat.e(j,k)) * t;
-		q[j] = (mat.e(j,i) + mat.e(i,j)) * t;
-		q[k] = (mat.e(k,i) + mat.e(i,k)) * t;
+		q[3] = (mat.idx(k,j) - mat.idx(j,k)) * t;
+		q[j] = (mat.idx(j,i) + mat.idx(i,j)) * t;
+		q[k] = (mat.idx(k,i) + mat.idx(i,k)) * t;
 	}
 	
-	return new Quaternion(new Vector([q[0], q[1], q[2]]), q[3]);
+	return (new Quaternion($V([q[0], q[1], q[2]]), q[3])).normalize();
 }
 
-function AxisAngleToQuaternion(axis, angle) {
+Quaternion.AxisAngleToQuaternion = function(axis, angle) {
 	var qv = axis.x(Math.sin(angle / 2));
 	var qs = Math.cos(angle / 2);
-	return new Quaternion(qv, qs);
+	return (new Quaternion(qv, qs)).normalize();
 }
 
-Quaternion.prototype.ToEuler = function() { return QuaternionToEuler(this); };
-Quaternion.prototype.ToMatrix = function() { return QuaternionToMatrix(this); };
+Quaternion.prototype.ToEuler = function() { return Quaternion.QuaternionToEuler(this); };
+Quaternion.prototype.ToMatrix = function() { return Quaternion.QuaternionToMatrix(this); };
 
 function TriangulatePolygon(vertArray, ccw=true) {
 	// triangulate a hole-less polygon given vertex set
@@ -268,7 +323,7 @@ function TriangulatePolygon(vertArray, ccw=true) {
 		tmp_face.normal = GetFaceNormal(vertArray[ll_prev[idx]], vertArray[idx], vertArray[ll_next[idx]]);
 		
 		// test if ear is convex
-		if (TestTriangleWinding(vertArray[tmp_face.indices.e(1)].position, vertArray[tmp_face.indices.e(2)].position, vertArray[tmp_face.indices.e(3)].position, ccw)) {
+		if (TestTriangleWinding(vertArray[tmp_face.indices.idx(0)].position, vertArray[tmp_face.indices.idx(1)].position, vertArray[tmp_face.indices.idx(2)].position, ccw)) {
 			// test if there is another vertex inside this triangle
 			var k = ll_next[ll_next[idx]];
 			do {

@@ -18,16 +18,16 @@
 				Scene.name = "Scene";
 				
 				var testSquare = new SceneObject("Square", Mesh.createSquareMesh(1.0, $V([0, 0, 1]), false));
-				testSquare.mesh._packArrays();
-				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
+				testSquare.components.mesh._packArrays();
+				testSquare.components.material.addShader("basic", "shader-vs", "shader-fs");
 				Scene.addChild(testSquare);
 				
-				var viewMatrix = Matrix.I(4).x(Matrix.Translation($V([-0.0, 0.0, -3.0])).ensure4x4());
+				testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
+				//testSquare.components.transform.RotateEuler(0, 0, 0);
+				LogError("Model Matrix: " + JSON.stringify(testSquare.components.transform.GetModelMatrix()));
 				
-				testSquare.material.setModelMatrix(Matrix.I(4));
-				testSquare.material.setViewMatrix(viewMatrix);
-				testSquare.material.setProjectionMatrix(makePerspective(45, 640.0/480.0, 0.1, 100.0));
-  
+				testSquare.components.material.setProjectionMatrix(makePerspective(45, 640.0/480.0, 0.1, 100.0));
+
 				Scene.draw();
             }
         </script>

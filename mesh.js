@@ -192,11 +192,7 @@ Mesh.createSingleTriangleMesh = function(a, b, c, twosided=true) {
 };
 
 Mesh.createSingleQuadMesh = function (a, b, c, d, twosided=true) {
-	// var omesh1 = createSingleTriangleMesh(a, b, c, twosided);
-	// var omesh2 = createSingleTriangleMesh(c, d, a, twosided);
-	
 	var omesh = Mesh.createSingleTriangleMesh(a, b, c, twosided);
-	// return omesh;
 	var vd = new Vertex();
 	vd.position = $V(d);
 	vd.normal = omesh.vertices[0].normal;
@@ -204,7 +200,6 @@ Mesh.createSingleQuadMesh = function (a, b, c, d, twosided=true) {
 	
 	var f1 = new Face();
 	f1.indices.setElements([omesh.vertices.length - 1, 2, 0]);
-	// f1.indices.setElements([0, 2, omesh.vertices.length - 1]);
 	omesh.faces.push(f1);
 	
 	if (twosided) {
