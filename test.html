@@ -40,7 +40,6 @@
 					var deltaTime = (curTime - lastTime) / 1000; // time given is ms, get in seconds
 					lastTime = curTime;
 					var amount = 10 * deltaTime;
-					LogError("DT: " + deltaTime);
 					testSquare.components.transform.Rotate(axis, amount);
 					Scene.draw();
 				}
