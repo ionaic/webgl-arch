@@ -71,7 +71,7 @@ Quaternion.prototype = {
 		// multiply by a scalar
 		return new Quaternion(this.qv.mul(k), this.qs * k);
 	},
-	asVector : function() {
+	toVector : function() {
 		var tmp = new Vector(this.qv);
 		tmp.elements.push(qs);
 		return tmp;
@@ -114,8 +114,8 @@ Quaternion.prototype = {
 	},
 	slerp : function(inQuat, beta) {
 		// TODO
-		var p = this.asVector();
-		var q = this.asVector();
+		var p = this.toVector();
+		var q = this.toVector();
 
 		return new Quaternion(SLERP(p, q, beta));
 	},
@@ -128,7 +128,7 @@ Quaternion.prototype = {
 	},
 	rotate : function(v) {
 		// rotate a vector v using this quaternion
-		return q.mul(new Quaternion(v, 0)).mul(q.inverse());
+		return q.mul(new Quaternion(v, 0)).mul(q.inverse()).toVector();
 	},
 }
 

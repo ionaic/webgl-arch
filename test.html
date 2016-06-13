@@ -47,19 +47,12 @@
 				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
 				Scene.addChild(testSquare);
 				
-				var testTri = new SceneObject("Tri", createSingleTriangleMesh([1.0, 1.0, 0.0], // 
-																			  [-1.0, -1.0, 0.0], //
-									                                          [1.0, -1.0, 0.0], false));
-				testTri.material.addShader("basic", "shader-vs", "shader-fs");
+				var viewMatrix = Matrix.I(4).x(Matrix.Translation($V([-0.0, 0.0, -3.0])).ensure4x4());
 				
-				testTri.material.setProjectionMatrix(makePerspective(45, 640.0/480.0, 0.1, 100.0));
+				testSquare.material.setModelMatrix(Matrix.I(4));
+				testSquare.material.setViewMatrix(viewMatrix);
+				testSquare.material.setProjectionMatrix(makePerspective(45, 640.0/480.0, 0.1, 100.0));
   
-				//loadIdentity();
-				//mvTranslate([-0.0, 0.0, -3.0]);
-				
-				//setMatrixUniforms(testSquare.material.shaders[0]);
-				//setMatrixUniforms(testTri.material.shaders[0]);
-				
 				Scene.draw();
             }
         </script>
@@ -85,14 +78,16 @@
 			varying vec3 oNormal;
 			varying vec2 oUv;
 			
-			// model view matrix (positioning in space of your vertex)
-			uniform mat4 uMVMatrix;
-			// perspective matrix (camera)
-			uniform mat4 uPMatrix;
+			// model matrix (positioning in space of your vertex)
+			uniform mat4 modelMatrix;
+			// camera positioning
+			uniform mat4 viewMatrix;
+			// perspective matrix (perspective projection camera)
+			uniform mat4 perspectiveMatrix;
 
 			void main(void) {
 				oPosition = vec4(position, 1.0);
-				gl_Position = uPMatrix * uMVMatrix * oPosition;
+				gl_Position = perspectiveMatrix * viewMatrix * modelMatrix * oPosition;
 				oNormal = normal;
 				oUv = uv;
 			}

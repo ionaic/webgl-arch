@@ -189,7 +189,7 @@ Material.prototype = {
 			this.shaders[idx].shaderUniforms.setModelMatrix(model);
 		}
 	},
-	setViewMatrix : function(model) {
+	setViewMatrix : function(view) {
 		for (var idx = 0; idx < this.shaders.length; ++idx) {
 			this.shaders[idx].shaderUniforms.setViewMatrix(view);
 		}
@@ -249,7 +249,7 @@ ShaderAttributes.prototype = {
 		}
 		return str;
 	},
-	// this is something fancy but it's upset abotu Symbol.iterator?
+	// this is something fancy but it's upset about Symbol.iterator?
 	// Symbol.iterator : function*() {
 		// for (var el in this) {
 			// if (this[el] instanceof VertexAttribute) {
@@ -298,22 +298,20 @@ Shader.prototype = {
 			this.vertex = gl.createShader(gl.VERTEX_SHADER);
 		}
 		
-		if (this.fragmentName != null) {
-			this.fragmentSource = getSourceFromDOM(this.fragmentName);
+		if (this.fragmentName != "") {
+			this.fragmentSource = getSourceFromDOM(this.fragmentName) || this.fragmentSource;
 		}
-		if (this.fragmentSource != null) {
-			LogError("Fragment Source: " + this.fragmentSource);
-			gl.shaderSource(this.fragment, getSourceFromDOM(this.fragmentName));
+		if (this.fragmentSource != "") {
+			gl.shaderSource(this.fragment, this.fragmentSource);
 			shaderCompileCheckErr(this.fragmentName, this.fragment);
 			
 			gl.attachShader(this.program, this.fragment);
 			LogError("Attaching fragment shader.");
 		}
-		if (this.vertexName != null) {
-			this.vertexSource = getSourceFromDOM(this.vertexName);
+		if (this.vertexName != "") {
+			this.vertexSource = getSourceFromDOM(this.vertexName) || this.vertexSource;
 		}
-		if (this.vertexSource != null) {
-			LogError("Vertex Source: " + this.vertexSource);
+		if (this.vertexSource != "") {
 			gl.shaderSource(this.vertex, this.vertexSource);
 			shaderCompileCheckErr(this.vertexName, this.vertex);
 			
@@ -442,8 +440,9 @@ Material.initDefaultMaterial = function() {
 		"varying vec2 oUv;\n" +
 		"\n" +
 		"void main(void) {\n" +
-		"	gl_FragColor = outlineColor;\n" +
+		"	// convert the position from range [-1, 1] to [0, 1] for colors\n" +
+		"	gl_FragColor = (oPosition + 1.0) * 0.5;\n" +
 		"}\n";
-	Material.DefaultShader = new Shader("Default", null, null, Material.DefaultVert, Material.DefaultFrag);
+	Material.DefaultShader = new Shader("Default", "DefaultVert", "DefaultFrag", Material.DefaultVert, Material.DefaultFrag);
 	Material.DefaultMaterial = new Material(Material.DefaultShader);
-}
+};
