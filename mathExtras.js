@@ -208,10 +208,10 @@ Quaternion.EulerToQuaternion = function(euler) {
 	var z = euler[2] / 2 * DEG2RAD;
 	
 	var q = [
-		Math.cos(x) * Math.cos(y) * Math.cos(z) + Math.sin(x) * Math.sin(y) + Math.sin(z),
-		Math.sin(x) * Math.cos(y) * Math.cos(z) - Math.cos(x) * Math.sin(y) + Math.sin(z),
-		Math.cos(x) * Math.sin(y) * Math.cos(z) - Math.sin(x) * Math.cos(y) + Math.sin(z),
-		Math.sin(x) * Math.cos(y) * Math.sin(z) - Math.sin(x) * Math.sin(y) + Math.cos(z)
+		Math.sin(x) * Math.cos(y) * Math.cos(z) - Math.cos(x) * Math.sin(y) * Math.sin(z),
+		Math.cos(x) * Math.sin(y) * Math.cos(z) + Math.sin(x) * Math.cos(y) * Math.sin(z),
+		Math.cos(x) * Math.cos(y) * Math.sin(z) - Math.sin(x) * Math.sin(y) * Math.cos(z),
+		Math.cos(x) * Math.cos(y) * Math.cos(z) + Math.sin(x) * Math.sin(y) * Math.sin(z)
 	];
 	return (new Quaternion(q)).normalize();
 }

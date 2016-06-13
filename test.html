@@ -32,6 +32,8 @@
 				
 				var lastTime = Date.now();
 				var axis = $V([0, 0, 1]);
+				LogError("Quat: " + Quaternion.EulerToQuaternion([0, 0, 10]));
+				LogError("Desired Quat: " + Quaternion.AxisAngleToQuaternion(axis, 10));
 				
 				function update() {
 					// clear the color/depth buffers
@@ -40,7 +42,8 @@
 					var deltaTime = (curTime - lastTime) / 1000; // time given is ms, get in seconds
 					lastTime = curTime;
 					var amount = 10 * deltaTime;
-					testSquare.components.transform.Rotate(axis, amount);
+					//testSquare.components.transform.Rotate(axis, amount);
+					testSquare.components.transform.RotateEuler(amount, amount, amount);
 					Scene.draw();
 				}
 				window.setInterval(update, 1000/30);
