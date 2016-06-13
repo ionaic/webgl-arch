@@ -62,6 +62,10 @@ SceneObject.prototype = {
 				this.children[idx].draw();
 			}
 		}
+		if (!this.mesh.hasMesh()) {
+			LogError("No mesh, skipping draw for object " + this.name);
+			return;
+		}
 		this.mesh.draw(this.material);
 	},
 	addChild : function(childobj) {

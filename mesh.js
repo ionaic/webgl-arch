@@ -103,11 +103,13 @@ Mesh.prototype = {
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
 	},
+	hasMesh : function() {
+		return !(this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null);
+	},
 	draw : function(material) {
 		// material is the material to draw the mesh with
 		// TODO ideally you want to batch the draw calls based on the material (shader) being used
-		if (this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null) {
-			LogError("No mesh, skipping draw for this mesh");
+		if (!this.hasMesh()) {
 			return;
 		}
 		this._packArrays();
@@ -141,7 +143,7 @@ Mesh.prototype = {
 };
 
 // utilities for making random geometry
-function createSingleTriangleMesh(a, b, c, twosided=true) {
+Mesh.createSingleTriangleMesh = function(a, b, c, twosided=true) {
 	// TODO add texture coordinates, bounding square
 	var omesh = new Mesh();
 	
@@ -187,13 +189,13 @@ function createSingleTriangleMesh(a, b, c, twosided=true) {
 	LogError("Generated Tri: " + omesh.toString());
 	
 	return omesh;
-}
+};
 
-function createSingleQuadMesh(a, b, c, d, twosided=true) {
+Mesh.createSingleQuadMesh = function (a, b, c, d, twosided=true) {
 	// var omesh1 = createSingleTriangleMesh(a, b, c, twosided);
 	// var omesh2 = createSingleTriangleMesh(c, d, a, twosided);
 	
-	var omesh = createSingleTriangleMesh(a, b, c, twosided);
+	var omesh = Mesh.createSingleTriangleMesh(a, b, c, twosided);
 	// return omesh;
 	var vd = new Vertex();
 	vd.position = $V(d);
@@ -224,30 +226,30 @@ function createSingleQuadMesh(a, b, c, d, twosided=true) {
 	return omesh;
 }
 
-function createSquareMesh(dim, normal, twosided=true) {
+Mesh.createSquareMesh = function (dim, normal, twosided=true) {
 	// TODO transform so that the normal points in the correct direction
-	var omesh = createSingleQuadMesh(
+	var omesh = Mesh.createSingleQuadMesh(
 									[dim, dim, 0.0], // 
 									 [-1.0 * dim, dim, 0.0], // 
 									 [-1.0 * dim, -1.0 * dim, 0.0], //
 									 [dim, -1.0 * dim, 0.0], //
 									 twosided);
 	return omesh;
-}
+};
 
-function createRectangleMesh(l, w, normal, twosided=true, ccw=true) {
+Mesh.createRectangleMesh = function (l, w, normal, twosided=true, ccw=true) {
+	var omesh;
+	
+	return omesh;
+};
+
+Mesh.createCircleMesh = function (center, radius, normal, twosided=true, ccw=true) {
 	var omesh;
 	
 	return omesh;
 }
 
-function createCircleMesh(center, radius, normal, twosided=true, ccw=true) {
-	var omesh;
-	
-	return omesh;
-}
-
-function createCubeMesh(dim, twosided=true, ccw=true) {
+Mesh.createCubeMesh = function(dim, twosided=true, ccw=true) {
 	var omesh;
 	
 	// // Front face
@@ -288,16 +290,16 @@ function createCubeMesh(dim, twosided=true, ccw=true) {
 	
 	
 	return omesh;
-}
+};
 
-function createBoxMesh(l, w, h, twosided=true, ccw=true) {
+Mesh.createBoxMesh = function(l, w, h, twosided=true, ccw=true) {
 	var omesh;
 	
 	return omesh;
-}
+};
 
-function createSphereMesh(dim) {
+Mesh.createSphereMesh = function(dim) {
 	var omesh;
 	
 	return omesh;
-}
+};

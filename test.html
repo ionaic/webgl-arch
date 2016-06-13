@@ -7,31 +7,6 @@
         <script type="text/javascript" src="scenegraph.js"></script>
         <script type="text/javascript" src="mathextras.js"></script>
 		<script type="text/javascript" src="glUtil.js"></script>
-		<script type="text/javascript">
-			var mvMatrix;
-			var perspectiveMatrix;
-			
-			function loadIdentity() {
-				mvMatrix = Matrix.I(4);
-			}
-
-			function multMatrix(m) {
-				mvMatrix = mvMatrix.x(m);
-			}
-
-			function mvTranslate(v) {
-				multMatrix(Matrix.Translation($V([v[0], v[1], v[2]])).ensure4x4());
-			}
-
-			function setMatrixUniforms(shader) {
-				gl.useProgram(shader.program);
-				var pUniform = gl.getUniformLocation(shader.program, "uPMatrix");
-				gl.uniformMatrix4fv(pUniform, false, new Float32Array(perspectiveMatrix.flatten()));
-
-				var mvUniform = gl.getUniformLocation(shader.program, "uMVMatrix");
-				gl.uniformMatrix4fv(mvUniform, false, new Float32Array(mvMatrix.flatten()));
-			}
-		</script>
         <script type="text/javascript">
             function start() {
                 var canvas = document.getElementById("glcanvas");
@@ -42,7 +17,7 @@
 				var Scene = new SceneObject();
 				Scene.name = "Scene";
 				
-				var testSquare = new SceneObject("Square", createSquareMesh(1.0, $V([0, 0, 1]), false));
+				var testSquare = new SceneObject("Square", Mesh.createSquareMesh(1.0, $V([0, 0, 1]), false));
 				testSquare.mesh._packArrays();
 				testSquare.material.addShader("basic", "shader-vs", "shader-fs");
 				Scene.addChild(testSquare);
@@ -83,11 +58,11 @@
 			// camera positioning
 			uniform mat4 viewMatrix;
 			// perspective matrix (perspective projection camera)
-			uniform mat4 perspectiveMatrix;
+			uniform mat4 projectionMatrix;
 
 			void main(void) {
 				oPosition = vec4(position, 1.0);
-				gl_Position = perspectiveMatrix * viewMatrix * modelMatrix * oPosition;
+				gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;
 				oNormal = normal;
 				oUv = uv;
 			}
@@ -118,7 +93,7 @@
 			// camera positioning
 			uniform mat4 viewMatrix;
 			// perspective matrix (perspective projection camera)
-			uniform mat4 perspectiveMatrix;
+			uniform mat4 projectionMatrix;
 
 			// uniform specifying how much to scale the mesh for an outline
 			uniform float outlineScale;
@@ -133,7 +108,7 @@
 				oPosition = oPosition * outlineScale;
 				
 				// modify vertex pos by MVP (because col major PVM) matrix
-				gl_Position = perspectiveMatrix * viewMatrix * modelMatrix * oPosition;
+				gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;
 			}
 		</script>
     </head>

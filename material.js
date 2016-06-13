@@ -217,6 +217,7 @@ Material.prototype = {
 		//}
 		for (var pass = 0; pass < this.shaders.length; ++pass) {
 			// setup for this shader pass
+			gl.useProgram(this.shaders[pass].program);
 			this.setUniforms(pass);
 			this.setAttributes(pass, mesh);
 			this.useMaterial(pass);
@@ -299,6 +300,7 @@ Shader.prototype = {
 		}
 		
 		if (this.fragmentName != "") {
+			// first try to grab a shader script tag with the given name, then use the provided source
 			this.fragmentSource = getSourceFromDOM(this.fragmentName) || this.fragmentSource;
 		}
 		if (this.fragmentSource != "") {
@@ -309,6 +311,7 @@ Shader.prototype = {
 			LogError("Attaching fragment shader.");
 		}
 		if (this.vertexName != "") {
+			// first try to grab a shader script tag with the given name, then use the provided source
 			this.vertexSource = getSourceFromDOM(this.vertexName) || this.vertexSource;
 		}
 		if (this.vertexSource != "") {
@@ -326,6 +329,7 @@ Shader.prototype = {
 		else {
 			LogError("Linking shader program " + this.name + ".\n" + gl.getProgramInfoLog(this.program));
 		}
+		gl.useProgram(this.program);
 	},
 	_parseVariables : function () {
 		// automatically parse the shader source to grab all the uniforms and attributes
@@ -355,16 +359,25 @@ Shader.prototype = {
 				LogError("Getting Uniform: " + this.shaderUniforms[uniform].toString());
 			}
 			else {
+				if (this.shaderUniforms[uniform] instanceof Function) {
+					continue;
+				}
 				LogError("Uniform: " + uniform.toString() + " not instance of ShaderUniform");
 			}
 		}
 	},
 	setUniforms : function () {
+		//TODO is it good to get the uniform locations each time you set them?
+		this.getUniformLocations();
 		for (var uniform in this.shaderUniforms) {
 			if (this.shaderUniforms[uniform] instanceof ShaderUniform) {
+				LogError("Setting uniform: " + this.shaderUniforms[uniform].toString());
 				this.shaderUniforms[uniform].setUniform();
 			}
 			else {
+				if (this.shaderUniforms[uniform] instanceof Function) {
+					continue;
+				}
 				LogError("Uniform: " + uniform.toString() + " not instance of ShaderUniform");
 			}
 		}
@@ -376,6 +389,9 @@ Shader.prototype = {
 				LogError("Getting Attribute: " + this.vertexAttributes[attr].toString());
 			}
 			else {
+				if (this.vertexAttributes[attr] instanceof Function) {
+					continue;
+				}
 				LogError("Attr: " + attr.toString() + " not instance of VertexAttribute");
 			}
 		}
@@ -385,6 +401,12 @@ Shader.prototype = {
 			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
 				gl.enableVertexAttribArray(this.vertexAttributes[attr].varLocation);
 				LogError("Using Attribute: " + this.vertexAttribtues[attr].toString());
+			}
+			else {
+				if (this.vertexAttributes[attr] instanceof Function) {
+					continue;
+				}
+				LogError("Attr: " + attr.toString() + " not instance of VertexAttribute");
 			}
 		}
 	},
