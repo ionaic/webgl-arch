@@ -54,6 +54,12 @@ Matrix.prototype.idx = function(i, j) {
 	}
 	return this.elements[i][j];
 }
+Vector.prototype.toString = function() {
+	return JSON.stringify(this.elements);
+}
+Matrix.prototype.toString = function() {
+	return JSON.stringify(this.elements);
+}
 
 // Quaternion type
 function Quaternion(inQv, inQs) {
@@ -223,13 +229,16 @@ Quaternion.QuaternionToMatrix = function(quat) {
 	var z = quat.q2();
 	var w = quat.q3();
 	
+	// transpose as the source i was using gives transpose
 	return $M(	[[1 - 2*y*y - 2*z*z, 2*x*y + 2*z*w, 2*x*z - 2*y*w],
 				[2*x*y - 2*z*w, 1 - 2*x*x - 2*z*z, 2*y*z + 2*x*w],
-				[2*x*z - 2*y*w, 2*y*z - 2*x*w, 1 - 2*x*x - 2*y*y]]);
+				[2*x*z + 2*y*w, 2*y*z - 2*x*w, 1 - 2*x*x - 2*y*y]]).transpose();
 }
 
-Quaternion.MatrixToQuaternion = function(mat) {
+Quaternion.MatrixToQuaternion = function(inMat) {
 	// adapted from Game Engine Architecture by Jason Gregory
+	// original source uses matrices transposed from my standard
+	var mat = inMat.transpose();
 	var q = [0, 0, 0, 0];
 	var trace = mat.idx(0,0) + mat.idx(1,1) + mat.idx(2,2);
 	

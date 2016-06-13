@@ -23,8 +23,8 @@
 				Scene.addChild(testSquare);
 				
 				testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
-				//testSquare.components.transform.RotateEuler(0, 0, 0);
-				LogError("Model Matrix: " + JSON.stringify(testSquare.components.transform.GetModelMatrix().elements));
+				
+				LogError("Model Matrix: " + testSquare.components.transform.GetModelMatrix());
 				
 				testSquare.components.material.setProjectionMatrix(makePerspective(45, 640.0/480.0, 0.1, 100.0));
 
@@ -32,9 +32,11 @@
 				
 				var lastTime = Date.now();
 				var axis = $V([0, 0, 1]);
-				LogError("Quat: " + Quaternion.EulerToQuaternion([0, 0, 10]));
-				LogError("Desired Quat: " + Quaternion.AxisAngleToQuaternion(axis, 10));
-				LogError("QuatToEuler: " + JSON.stringify(Quaternion.QuaternionToEuler(Quaternion.EulerToQuaternion([0, 0, 10]))));
+
+				testSquare.components.transform.Rotate(axis, 10);
+				var modelMatrix = testSquare.components.transform.GetModelMatrix();
+				LogError("Model Matrix: " + modelMatrix);
+				LogError("QuatToMatrix: " + Quaternion.QuaternionToMatrix(Quaternion.AxisAngleToQuaternion(axis, 10)).ensure4x4());
 				
 				function update() {
 					// clear the color/depth buffers
