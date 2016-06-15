@@ -22,11 +22,15 @@ function Transform() {
 	this.position = $V([0,0,0]);
 	// 3 numbers, angle between each axis (x, y, z) in model space compared to (x,y,z) world space/parent space
 	// can store the basis vectors of the model and then the matrix is [i 0; j 0; k 0; t 0] where i j k are the basis vectors in world space and t is the translation
-	this.rotation = $V([0,0,0]);
 	this.basis = new VectorBasis();
 	this.scale = [1,1,1]; // only allow uniform scale?
 }
 Transform.prototype = {
+	rotation : function() {
+		return [Math.acos(this.basis.left.ensure3D().dot([1,0,0])), 
+				Math.acos(this.basis.up.ensure3D().dot([0,1,0])), 
+				Math.acos(this.basis.forward.ensure3D().dot([0,0,1]))]
+	},
 	getEulerAngles : function() {
 		// quaternion to euler
 	},

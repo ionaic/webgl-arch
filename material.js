@@ -19,12 +19,16 @@ VertexAttribute.prototype = {
 function Texture(inName, inSrcImg, inSrcName) {
 	this.name = inName || "";
 	this.texture = gl.createTexture();
+	this.images = [];
 }
 Texture.prototype = {
 	LoadFromDOM : function(domID) {
 		
 	},
 	LoadFromPath : function(path) {
+		
+	},
+	SetMipMapLevel : function() {
 		
 	}
 }

@@ -186,7 +186,7 @@ Mesh.createSingleTriangleMesh = function(a, b, c, twosided=true) {
 	omesh._packArrays();
 	omesh.initBuffers();
 	
-	LogError("Generated Tri: " + omesh.toString());
+	// LogError("Generated Tri: " + omesh.toString());
 	
 	return omesh;
 };
@@ -213,10 +213,8 @@ Mesh.createSingleQuadMesh = function (a, b, c, d, twosided=true) {
 		omesh.faces.push(f2);
 	}
 	
-	LogError("A: " + JSON.stringify(a) + "\nB: " + JSON.stringify(b) + "\nC: " + JSON.stringify(c) + "\nD: " + JSON.stringify(d));
-
 	omesh._packArrays();
-	LogError("Created quad: " + omesh.toString());
+	// LogError("Created quad: " + omesh.toString());
 	
 	return omesh;
 }

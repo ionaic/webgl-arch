@@ -8,9 +8,32 @@
         <script type="text/javascript" src="mathextras.js"></script>
 		<script type="text/javascript" src="glUtil.js"></script>
         <script type="text/javascript">
+			var pos_el;
+			var rot_el;
+			var sca_el;
+			function setTextNode(element, text) {
+				var currentChild = element.firstChild;
+				while (currentChild) {
+					if (currentChild.nodeType == currentChild.TEXT_NODE) {
+						currentChild.textContent = text;
+						return;
+					}
+					currentChild = currentChild.nextSibling;
+				}
+				element.appendChild(document.createTextNode(text));
+			}
+			function LogTransform(position, rotation, scale) {
+				setTextNode(pos_el, position);
+				setTextNode(rot_el, rotation);
+				setTextNode(sca_el, scale);
+			}
             function start() {
                 var canvas = document.getElementById("glcanvas");
 				LogElement = document.getElementById("err_log");
+				
+				pos_el = document.getElementById("position");
+				rot_el = document.getElementById("rotation");
+				sca_el = document.getElementById("scale");
 				
                 initGL(canvas);
 				
@@ -24,19 +47,12 @@
 				
 				testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
 				
-				LogError("Model Matrix: " + testSquare.components.transform.GetModelMatrix());
-				
 				testSquare.components.material.setProjectionMatrix(makePerspective(45, 640.0/480.0, 0.1, 100.0));
 
 				Scene.draw();
 				
 				var lastTime = Date.now();
 				var axis = $V([0, 0, 1]);
-
-				testSquare.components.transform.Rotate(axis, 10);
-				var modelMatrix = testSquare.components.transform.GetModelMatrix();
-				LogError("Model Matrix: " + modelMatrix);
-				LogError("QuatToMatrix: " + Quaternion.QuaternionToMatrix(Quaternion.AxisAngleToQuaternion(axis, 10)).ensure4x4());
 				
 				function update() {
 					// clear the color/depth buffers
@@ -45,9 +61,11 @@
 					var deltaTime = (curTime - lastTime) / 1000; // time given is ms, get in seconds
 					lastTime = curTime;
 					var amount = 10 * deltaTime;
-					//testSquare.components.transform.Rotate(axis, amount);
-					testSquare.components.transform.RotateEuler(amount, amount, amount);
+					testSquare.components.transform.Rotate(axis, amount);
+					//testSquare.components.transform.RotateEuler(amount, amount, amount);
 					Scene.draw();
+					
+					LogTransform(testSquare.components.transform.position.toString(), $V(testSquare.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(testSquare.components.transform.scale));
 				}
 				window.setInterval(update, 1000/30);
             }
@@ -137,6 +155,11 @@
         <canvas id="glcanvas" width="640" height="480">
             Browser does not support the <code>&lt;canvas&gt;</code> element.
         </canvas>
+		<div id="transform">
+			<div><span>Position: </span><span id="position"></span></div>
+			<div><span>Rotation: </span><span id="rotation"></span></div>
+			<div><span>Scale: </span><span id="scale"></span></div>
+		</div>
 		<div id="err_log" style="overflow: scroll; height: 30em"></div>
     </body>
 </html>
