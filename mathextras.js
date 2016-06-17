@@ -296,7 +296,10 @@ Quaternion.AxisAngleRadToQuaternion = function(axis, angle) {
 Quaternion.prototype.ToEuler = function() { return Quaternion.QuaternionToEuler(this); };
 Quaternion.prototype.ToMatrix = function() { return Quaternion.QuaternionToMatrix(this); };
 
-function TriangulatePolygon(vertArray, ccw=true) {
+function TriangulatePolygon(vertArray, ccw) {
+	if (ccw == null) {
+		ccw = true;
+	}
 	// triangulate a hole-less polygon given vertex set
 	// function assumes that the input is a polygon to be split into triangles and that the vertices are in CCW or CW order as opposed to vertex soup
 	// code adapted from Real-Time Collision Detection by Christer Ericson, Chapter 12 - Geometrical robustness pg 498 (ear-clipping triangulation algorithm)
@@ -383,7 +386,7 @@ function GetFaceNormal(a, b, c) {
 	return onorm.multiply(ndot < 0 ? -1 : 1);
 }
 
-function TestTriangleWinding(norm, a, b, c, ccw=true) {
+function TestTriangleWinding(norm, a, b, c, ccw) {
 	// if RH rule then it's CCW, if it's LH rule then CW
 	// world and object space for OpenGL (WebGL) is RH by default
 	// if we check this against the normal i think there's no need to specify specifically CCW or CW, 
@@ -395,7 +398,7 @@ function TestTriangleWinding(norm, a, b, c, ccw=true) {
 	return (norm.dot(onorm) > 0);
 }
 
-function PointTriangleIntersection(pt, a, b, c, ccw=true) {
+function PointTriangleIntersection(pt, a, b, c, ccw) {
 	
 }
 

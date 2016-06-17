@@ -209,14 +209,14 @@ Material.prototype = {
 			this.shaders[idx].shaderUniforms.setProjectionMatrix(projection);
 		}
 	},
-	setUniforms : function(shaderIdx = 0) {
-		this.shaders[shaderIdx].setUniforms();
+	setUniforms : function(shaderIdx) {
+		this.shaders[shaderIdx || 0].setUniforms();
 	},
-	setAttributes : function(mesh, shaderIdx = 0) {
-		this.shaders[0].setMeshAttributes(mesh);
+	setAttributes : function(mesh, shaderIdx) {
+		this.shaders[shaderIdx || 0].setMeshAttributes(mesh);
 	},
-	useMaterial : function(shaderIdx = 0) {
-		this.shaders[0].useShader();
+	useMaterial : function(shaderIdx) {
+		this.shaders[shaderIdx || 0].useShader();
 	},
 	draw : function(mesh) {
 		// TODO need some sort of registry so you can batch call draw, 1 call to material.draw for all meshes using material
@@ -234,7 +234,7 @@ Material.prototype = {
 			mesh._drawMesh();
 		}
 	},
-	toString : function(full = false) {
+	toString : function(full) {
 		var str = "";
 		for (var idx = 0; idx < this.shaders.length; ++idx) {
 			str += this.shaders[idx].toString(full);
@@ -424,7 +424,7 @@ Shader.prototype = {
 			}
 		}
 	},
-	toString : function(full = false) {
+	toString : function(full) {
 		if (full) {
 			return JSON.stringify(this);
 		}

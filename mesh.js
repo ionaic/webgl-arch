@@ -134,7 +134,8 @@ Mesh.prototype = {
 			gl.drawArrays(this.drawWireframe ? gl.LINE_LOOP : gl.TRIANGLES, 0, this._vertices.length / 3);
 		}
 	},
-	toString : function(full=false) {
+	toString : function(full) {
+		full = full || false;
 		if (full) {
 			return JSON.stringify(this);
 		}
@@ -143,7 +144,7 @@ Mesh.prototype = {
 };
 
 // utilities for making random geometry
-Mesh.createSingleTriangleMesh = function(a, b, c, twosided=true) {
+Mesh.createSingleTriangleMesh = function(a, b, c, twosided) {
 	// TODO add texture coordinates, bounding square
 	var omesh = new Mesh();
 	
@@ -191,7 +192,7 @@ Mesh.createSingleTriangleMesh = function(a, b, c, twosided=true) {
 	return omesh;
 };
 
-Mesh.createSingleQuadMesh = function (a, b, c, d, twosided=true) {
+Mesh.createSingleQuadMesh = function (a, b, c, d, twosided) {
 	var omesh = Mesh.createSingleTriangleMesh(a, b, c, twosided);
 	var vd = new Vertex();
 	vd.position = $V(d);
@@ -219,7 +220,7 @@ Mesh.createSingleQuadMesh = function (a, b, c, d, twosided=true) {
 	return omesh;
 }
 
-Mesh.createSquareMesh = function (dim, normal, twosided=true) {
+Mesh.createSquareMesh = function (dim, normal, twosided) {
 	// TODO transform so that the normal points in the correct direction
 	var omesh = Mesh.createSingleQuadMesh(
 									[dim, dim, 0.0], // 
@@ -230,19 +231,19 @@ Mesh.createSquareMesh = function (dim, normal, twosided=true) {
 	return omesh;
 };
 
-Mesh.createRectangleMesh = function (l, w, normal, twosided=true, ccw=true) {
+Mesh.createRectangleMesh = function (l, w, normal, twosided, ccw) {
 	var omesh;
 	
 	return omesh;
 };
 
-Mesh.createCircleMesh = function (center, radius, normal, twosided=true, ccw=true) {
+Mesh.createCircleMesh = function (center, radius, normal, twosided, ccw) {
 	var omesh;
 	
 	return omesh;
 }
 
-Mesh.createCubeMesh = function(dim, twosided=true, ccw=true) {
+Mesh.createCubeMesh = function(dim, twosided, ccw) {
 	var omesh;
 	
 	// // Front face
@@ -285,7 +286,7 @@ Mesh.createCubeMesh = function(dim, twosided=true, ccw=true) {
 	return omesh;
 };
 
-Mesh.createBoxMesh = function(l, w, h, twosided=true, ccw=true) {
+Mesh.createBoxMesh = function(l, w, h, twosided, ccw) {
 	var omesh;
 	
 	return omesh;

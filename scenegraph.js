@@ -124,7 +124,7 @@ SceneObject.prototype = {
 	addComponent : function(component) {
 		// this.components.
 	},
-	toString : function(full=false) {
+	toString : function(full) {
 		if (full) {
 			return JSON.stringify(this);
 		}
