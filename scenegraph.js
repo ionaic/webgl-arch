@@ -67,7 +67,7 @@ Transform.prototype = {
 		this.scale[2] = scalar || this.scale[2];
 		return this.scale[2];
 	},
-	GetModelMatrix : function() {
+	GetTransformMatrix : function() {
 		// return matrix transform
 		// the basis vectors make up the column vectors of the model matrix, the translation is the 4th column vector
 		return $M([this.basis.left.x(this.scale[0]).elements, 
@@ -114,7 +114,7 @@ SceneObject.prototype = {
 			// LogError("No mesh, skipping draw for object " + this.name);
 			return;
 		}
-		this.components.material.setModelMatrix(this.components.transform.GetModelMatrix());
+		this.components.material.setModelMatrix(this.GetModelMatrix());
 		this.components.mesh.draw(this.components.material);
 	},
 	addChild : function(childobj) {
@@ -124,6 +124,9 @@ SceneObject.prototype = {
 	addComponent : function(component) {
 		// this.components.
 	},
+	GetModelMatrix : function() {
+		return this.components.transform.GetTransformMatrix();
+	},
 	toString : function(full) {
 		if (full) {
 			return JSON.stringify(this);
@@ -132,14 +135,53 @@ SceneObject.prototype = {
 	}
 };
 
-function Camera() {
+function Camera(inFov, inAspect, inNearPlane, inFarPlane) {
 	SceneObject.call(this, "Camera");
 	this.forward = $V([0,0,0]);
 	this.up = $V([0, 1, 0]);
+	this.fov = inFov;
+	this.aspect = inAspect;
+	this.nearPlane = inNearPlane;
+	this.farPlane = inFarPlane;
 }
-// TODO is this how this inheritance works in JS?
 Camera.prototype = Object.create(SceneObject.prototype, {
-	GetViewMatrix : function() {
-		
+	GetViewMatrix : {
+		value : function() {
+			return this.transform.GetModelMatrix();
+		},
+		enumerable : false,
+		configurable : true,
+		writable : true
+	},
+	GetViewToWorldMatrix : {
+		value : function() {
+			return this.GetViewMatrix().inverse();
+		},
+		enumerable : false,
+		configurable : true,
+		writable : true
+	},
+	GetWorldToViewMatrix : {
+		value : this.GetViewMatrix,
+		enumerable : false,
+		configurable : true,
+		writable : true
+	},
+	GetProjectionMatrix : {
+		value : function() {
+			
+		},
+		enumerable : false,
+		configurable : true,
+		writable : true
+	},
+	SetCameraMatrices : {
+		value : function(material) {
+			
+		},
+		enumerable : false,
+		configurable : true,
+		writable : true
+	}
 });
 Camera.prototype.constructor = Camera;
