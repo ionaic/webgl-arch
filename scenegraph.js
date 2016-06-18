@@ -143,11 +143,14 @@ function Camera(inFov, inAspect, inNearPlane, inFarPlane) {
 	this.aspect = inAspect;
 	this.nearPlane = inNearPlane;
 	this.farPlane = inFarPlane;
+	this.projection = null;
+	
+	this.GeneratePerspectiveMatrix();
 }
 Camera.prototype = Object.create(SceneObject.prototype, {
 	GetViewMatrix : {
 		value : function() {
-			return this.transform.GetModelMatrix();
+			return this.components.transform.GetTransformMatrix();
 		},
 		enumerable : false,
 		configurable : true,
@@ -169,7 +172,10 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 	},
 	GetProjectionMatrix : {
 		value : function() {
-			
+			if (this.projection == null) {
+				this.GeneratePerspectiveMatrix();
+			}
+			return this.projection;
 		},
 		enumerable : false,
 		configurable : true,
@@ -177,7 +183,16 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 	},
 	SetCameraMatrices : {
 		value : function(material) {
-			
+			material.setViewMatrix(this.GetViewMatrix());
+			material.setProjectionMatrix(this.GetProjectionMatrix());
+		},
+		enumerable : false,
+		configurable : true,
+		writable : true
+	},
+	GeneratePerspectiveMatrix : {
+		value : function() {
+			this.projection = Camera.MakePerspectiveMatrix(this.fov, this.aspect, this.nearPlane, this.farPlane);
 		},
 		enumerable : false,
 		configurable : true,
@@ -185,3 +200,5 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 	}
 });
 Camera.prototype.constructor = Camera;
+
+Camera.MakePerspectiveMatrix = makePerspective;
