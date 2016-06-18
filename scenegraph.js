@@ -138,5 +138,8 @@ function Camera() {
 	this.up = $V([0, 1, 0]);
 }
 // TODO is this how this inheritance works in JS?
-// Camera.prototype = Object.create(SceneObject.prototype, {
-// });
+Camera.prototype = Object.create(SceneObject.prototype, {
+	GetViewMatrix : function() {
+		
+});
+Camera.prototype.constructor = Camera;
