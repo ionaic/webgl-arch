@@ -121,8 +121,12 @@ SceneObject.prototype = {
 		// childobj.parent = this;
 		this.children.push(childobj);
 	},
-	addComponent : function(component) {
-		// this.components.
+	addComponent : function(name, component) {
+		var old = this.components[name];
+		
+		this.components[name] = component;
+		
+		return old;
 	},
 	GetModelMatrix : function() {
 		return this.components.transform.GetTransformMatrix();

@@ -85,3 +85,19 @@ function checkGLError(message) {
 	// TODO function for checking gl errors along the way
 	// message is meant for telling you what operation was being performed
 }
+
+// for compatibility with Safari
+Float32Array.from = Float32Array.from || function(arraylike) {
+	var out = new Float32Array();
+	for (var idx = 0; idx < arraylike.length; ++idx) {
+		out.push(arraylike[idx]);
+	}
+	return out;
+}
+Uint16Array.from = Uint16Array.from || function(arraylike) {
+	var out = new Uint16Array();
+	for (var idx = 0; idx < arraylike.length; ++idx) {
+		out.push(arraylike[idx]);
+	}
+	return out;
+}
