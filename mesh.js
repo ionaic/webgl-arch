@@ -29,6 +29,14 @@ function Mesh() {
 }
 
 Mesh.prototype = {
+	addVertex : function(pos, norm, uv) {
+		this.vertices.push(new Vertex(pos, norm, uv));
+		return this.vertices.length - 1;
+	},
+	addFace : function(v1, v2, v3, inNorm) {
+		var calcNorm = (this.vertices[v1].normal + this.vertices[v2].normal + this.vertices[v3].normal) / 3;
+		this.faces.push(new Face([v1,v2,v3], inNorm || calcNorm));
+	}
 	_packArrays : function() {
 		var tmpVerts = [];
 		var tmpNormals = [];
@@ -246,42 +254,42 @@ Mesh.createCircleMesh = function (center, radius, normal, twosided, ccw) {
 Mesh.createCubeMesh = function(dim, twosided, ccw) {
 	var omesh;
 	
-	// // Front face
-	// [-1.0, -1.0,  1.0]
-	// [1.0, -1.0,  1.0]
-	// [1.0,  1.0,  1.0]
-	// [-1.0,  1.0,  1.0]
+	// Front face
+	omesh.addVertex($V([-1.0, -1.0,  1.0]));
+	omesh.addVertex($V([ 1.0, -1.0,  1.0]));
+	omesh.addVertex($V([ 1.0,  1.0,  1.0]));
+	omesh.addVertex($V([-1.0,  1.0,  1.0]));
+	// omesh.addFace(
 
-	// // Back face
-	// [-1.0, -1.0, -1.0]
-	// [-1.0,  1.0, -1.0]
-	// [1.0,  1.0, -1.0]
-	// [1.0, -1.0, -1.0]
+	// Back face
+	omesh.addVertex($V([-1.0, -1.0, -1.0]));
+	omesh.addVertex($V([-1.0,  1.0, -1.0]));
+	omesh.addVertex($V([ 1.0,  1.0, -1.0]));
+	omesh.addVertex($V([ 1.0, -1.0, -1.0]));
 
-	// // Top face
-	// [-1.0,  1.0, -1.0]
-	// [-1.0,  1.0,  1.0]
-	// [1.0,  1.0,  1.0]
-	// [1.0,  1.0, -1.0]
+	// Top face
+	omesh.addVertex($V([-1.0,  1.0, -1.0]));
+	omesh.addVertex($V([-1.0,  1.0,  1.0]));
+	omesh.addVertex($V([ 1.0,  1.0,  1.0]));
+	omesh.addVertex($V([ 1.0,  1.0, -1.0]));
 
-	// // Bottom face
-	// [-1.0, -1.0, -1.0]
-	// [1.0, -1.0, -1.0]
-	// [1.0, -1.0,  1.0]
-	// [-1.0, -1.0,  1.0]
+	// Bottom face
+	omesh.addVertex($V([-1.0, -1.0, -1.0]));
+	omesh.addVertex($V([ 1.0, -1.0, -1.0]));
+	omesh.addVertex($V([ 1.0, -1.0,  1.0]));
+	omesh.addVertex($V([-1.0, -1.0,  1.0]));
 
-	// // Right face
-	// [1.0, -1.0, -1.0]
-	// [1.0,  1.0, -1.0]
-	// [1.0,  1.0,  1.0]
-	// [1.0, -1.0,  1.0]
+	// Right face
+	omesh.addVertex($V([1.0, -1.0, -1.0]));
+	omesh.addVertex($V([1.0,  1.0, -1.0]));
+	omesh.addVertex($V([1.0,  1.0,  1.0]));
+	omesh.addVertex($V([1.0, -1.0,  1.0]));
 
-	// // Left face
-	// [-1.0, -1.0, -1.0]
-	// [-1.0, -1.0,  1.0]
-	// [-1.0,  1.0,  1.0]
-	// [-1.0,  1.0, -1.0]
-	
+	// Left face
+	omesh.addVertex($V([-1.0, -1.0, -1.0]));
+	omesh.addVertex($V([-1.0, -1.0,  1.0]));
+	omesh.addVertex($V([-1.0,  1.0,  1.0]));
+	omesh.addVertex($V([-1.0,  1.0, -1.0]));
 	
 	return omesh;
 };

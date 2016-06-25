@@ -16,21 +16,48 @@ VertexAttribute.prototype = {
 	}
 };
 
-function Texture(inName, inSrcImg, inSrcName) {
+function Texture(inName, inSrcImg, inSrcName, customMipMap, inFormat, inType) {
+	// inSrcImg is for handling DOM images, just do document.getByX and pass in
+	// inSrcName is for handling images loaded from files
 	this.name = inName || "";
 	this.texture = gl.createTexture();
-	this.images = [];
+	this.image = inSrcImg || new Image();
+	if (inSrcImg == null) {
+		this.image.src = inSrcName;
+	}
+	this.image.onload = this.LoadImageToTexture;
+	this.mipimages = [];
+	// have to do a full check, not sure if the enum would eval to null ever
+	this.format = inFormat == null ? gl.RGBA : inFormat;
+	this.type = inType == null ? gl.UNSIGNED_BYTE : inType;
+	if (!customMipMap) {
+		this.GenerateMipMap(gl.LINEAR, gl.LINEAR_MIPMAP_NEAREST);
+	}
 }
 Texture.prototype = {
-	LoadFromDOM : function(domID) {
+	LoadImageToTexture : function() {
+		this.BindTexture();
+		gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, this.image);
+		this.UnbindTexture();
+	},
+	AddMipMapLevel : function(level, image) {
 		
 	},
-	LoadFromPath : function(path) {
+	BindTexture : function() {
+		gl.bindTexture(gl.TEXTURE_2D, this.texture);
+	},
+	UnbindTexture : function() {
+		gl.bindTexture(gl.TEXTURE_2D, null);
+	},
+	UseTexture : function() {
 		
 	},
-	SetMipMapLevel : function() {
-		
-	}
+	GenerateMipMap : function(magFilter, minFilter) {
+		this.BindTexture();
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, magFilter);
+		gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, minFilter);
+		this.UnbindTexture();
+	},
 }
 
 function ShaderUniform(inName, inLoc, inVal, inType, inNum, inMat) {
