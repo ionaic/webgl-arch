@@ -11,6 +11,7 @@
 			var pos_el;
 			var rot_el;
 			var sca_el;
+			var mat_el;
 			function setTextNode(element, text) {
 				var currentChild = element.firstChild;
 				while (currentChild) {
@@ -22,10 +23,11 @@
 				}
 				element.appendChild(document.createTextNode(text));
 			}
-			function LogTransform(position, rotation, scale) {
+			function LogTransform(position, rotation, scale, matrix) {
 				setTextNode(pos_el, position);
 				setTextNode(rot_el, rotation);
 				setTextNode(sca_el, scale);
+				setTextNode(mat_el, matrix);
 			}
             function start() {
                 var canvas = document.getElementById("glcanvas");
@@ -34,6 +36,7 @@
 				pos_el = document.getElementById("position");
 				rot_el = document.getElementById("rotation");
 				sca_el = document.getElementById("scale");
+				mat_el = document.getElementById("matrix");
 				
                 initGL(canvas);
 				
@@ -41,21 +44,25 @@
 				Scene.name = "Scene";
 				
 				var testSquare = new SceneObject("Square", Mesh.createSquareMesh(1.0, $V([0, 0, 1]), false));
+				var cube = new SceneObject("Cube", Mesh.createCubeMesh(1.0, true, true));
+				cube.components.material.addShader(Material.DefaultShader);
+				Scene.addChild(cube);
 				testSquare.components.mesh._packArrays();
 				testSquare.components.material.addShader(Material.DefaultShader);
-				Scene.addChild(testSquare);
+				// Scene.addChild(testSquare);
 				
 				var camera = new Camera(45, 640.0/480.0, 0.1, 100.0);
 				camera.components.transform.Translate([0, 0, -5]);
 				
 				testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
+				cube.components.transform.Translate([0.0, 0.0, -5.0]);
 				
 				camera.SetCameraMatrices(testSquare.components.material);
 
 				Scene.draw();
 				
 				var lastTime = Date.now();
-				var axis = $V([0, 0, 1]);
+				var axis = $V([1, 1, 1]);
 				
 				function update() {
 					// clear the color/depth buffers
@@ -64,11 +71,12 @@
 					var deltaTime = (curTime - lastTime) / 1000; // time given is ms, get in seconds
 					lastTime = curTime;
 					var amount = 10 * deltaTime;
-					testSquare.components.transform.Rotate(axis, amount);
-					//testSquare.components.transform.RotateEuler(amount, amount, amount);
+					//testSquare.components.transform.Rotate(axis, amount);
+					cube.components.transform.Rotate(axis, amount);
+					//cube.components.transform.RotateEuler(amount, amount, amount);
 					Scene.draw();
 					
-					LogTransform(testSquare.components.transform.position.toString(), $V(testSquare.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(testSquare.components.transform.scale));
+					LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.GetModelMatrix());
 				}
 				window.setInterval(update, 1000/30);
             }
@@ -162,6 +170,7 @@
 			<div><span>Position: </span><span id="position"></span></div>
 			<div><span>Rotation: </span><span id="rotation"></span></div>
 			<div><span>Scale: </span><span id="scale"></span></div>
+			<div><span>Matrix: </span><span id="matrix"></span></div>
 		</div>
 		<div id="err_log" style="overflow: scroll; height: 30em"></div>
     </body>

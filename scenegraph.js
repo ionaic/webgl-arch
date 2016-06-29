@@ -12,9 +12,10 @@ VectorBasis.prototype = {
 		return $M(this.toArray());
 	},
 	Rotate : function(quat) {
-		this.left = quat.rotate(this.left);
-		this.up = quat.rotate(this.up);
-		this.forward = quat.rotate(this.forward);
+		// cube slowly flattens if left rotation for long periods, normalize to prevent this?
+		this.left = quat.rotate(this.left).normalize();
+		this.up = quat.rotate(this.up).normalize();
+		this.forward = quat.rotate(this.forward).normalize();
 	}
 }
 
@@ -205,4 +206,11 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 });
 Camera.prototype.constructor = Camera;
 
-Camera.MakePerspectiveMatrix = makePerspective;
+Camera.MakePerspectiveMatrix = makePerspective
+
+function Light() {
+	
+}
+Light.prototype = Object.create(SceneObject.prototype, {
+});
+Light.prototype.constructor = Light;

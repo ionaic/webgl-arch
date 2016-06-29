@@ -35,8 +35,8 @@ Mesh.prototype = {
 	},
 	addFace : function(v1, v2, v3, inNorm) {
 		var calcNorm = (this.vertices[v1].normal + this.vertices[v2].normal + this.vertices[v3].normal) / 3;
-		this.faces.push(new Face([v1,v2,v3], inNorm || calcNorm));
-	}
+		this.faces.push(new Face($V([v1,v2,v3]), inNorm || calcNorm));
+	},
 	_packArrays : function() {
 		var tmpVerts = [];
 		var tmpNormals = [];
@@ -156,70 +156,87 @@ Mesh.createSingleTriangleMesh = function(a, b, c, twosided) {
 	// TODO add texture coordinates, bounding square
 	var omesh = new Mesh();
 	
-	var va = new Vertex(), vb = new Vertex(), vc = new Vertex();
+	var va = $V(a), vb = $V(b), vc = $V(c);
+	var fidx = [];
 	
-	va.position = $V(a);
-	vb.position = $V(b);
-	vc.position = $V(c);
+	// calculate triangle norm
+	var faceNorm = vb.subtract(va).cross(vc.subtract(va)).normalize();
 	
-	var faceNorm = vb.position.subtract(va.position).cross(vc.position.subtract(va.position)).normalize();
-	va.normal = vb.normal = vc.normal = faceNorm;
+	// calculate texture coordinates by finding the minimum square that contains it
+	// vectors of triangles
+	// TODO this doesn't give the right proportions and will stretch the texture
+	var AB = vb.subtract(va), AC = vc.subtract(va);
+	var mAB = AB.magnitude(), mAC = AC.magnitude();
+	// project onto xy plane by removing z element
+	AB.elements.pop();
+	AC.elements.pop();
+	// scale back to the desired magnitudes so relative lengths preserved
+	// angle not necessarily preserved
+	AB = AB.normalize().multiply(mAB);
+	AC = AC.normalize().multiply(mAC);
+	// scale back to [0,1]
+	var scale = 1.0 / Math.max(mAB, mAC);
+	AB = AB.multiply(scale);
+	AC = AC.multiply(scale);
+	var uva = $V([0,0]), uvb = AB, uvc = AC;
+	var min = [Math.min(AB.idx(0), AC.idx(0)), Math.min(AB.idx(1),AC.idx(1))]
+	if (min[0] < 0) {
+		// shift everything +1 then scale back to [0,1]
+		uva.elements[0] += 1;
+		uvb.elements[0] += 1;
+		uvc.elements[0] += 1;
+		
+		// var max = Math.max(uva.elements[0], uvb.elements[0], uvc.elements[0]);
+		uva.elements[0] /= 2;
+		uvb.elements[0] /= 2;
+		uvc.elements[0] /= 2;
+	}
+	if (min[1] < 0) {
+		// shift everything +1 then scale back to [0,1]
+		uva.elements[1] += 1;
+		uvb.elements[1] += 1;
+		uvc.elements[1] += 1;
+		
+		// var max = Math.max(uva.elements[1], uvb.elements[1], uvc.elements[1]);
+		uva.elements[1] /= 2;
+		uvb.elements[1] /= 2;
+		uvc.elements[1] /= 2;
+	}
 	
-	omesh.vertices.push(va);
-	omesh.vertices.push(vb);
-	omesh.vertices.push(vc);
+	fidx[0] = omesh.addVertex(va, faceNorm, uva);
+	fidx[1] = omesh.addVertex(vb, faceNorm, uvb);
+	fidx[2] = omesh.addVertex(vc, faceNorm, uvc);
 	
-	var f1 = new Face(), f2 = new Face();
-	f1.indices.setElements([2, 1, 0]);
-	f1.normal = faceNorm; 
-	omesh.faces.push(f1);
+	omesh.addFace(fidx[2], fidx[1], fidx[0], faceNorm);
 	
 	if (twosided) {
 		// need a second set of verts for a double sided tri with normals pointing the opposite way
-		var vd = new Vertex(), ve = new Vertex(), vf = new Vertex();
-		vd.normal = ve.normal = vf.normal = faceNorm.multiply(-1);
-		vd.position = $V(a);
-		ve.position = $V(b);
-		vf.position = $V(c);
+		var vd = $V(a), ve = $V(b), vf = $V(c);
+		var faceNorm2 = faceNorm.multiply(-1);
 		
-		omesh.vertices.push(vd);
-		omesh.vertices.push(ve);
-		omesh.vertices.push(vf);
+		fidx[0] = omesh.addVertex(vd, faceNorm2, uva);
+		fidx[1] = omesh.addVertex(ve, faceNorm2, uvb);
+		fidx[2] = omesh.addVertex(vf, faceNorm2, uvc);
 		
-		var f2 = new Face();
-		f2.indices.setElements([3, 4, 5]);
-		f2.normal = faceNorm.multiply(-1);
-		omesh.faces.push(f2);
+		omesh.addFace(fidx[0], fidx[1], fidx[2], faceNorm2);
 	}
 	
 	omesh._packArrays();
 	omesh.initBuffers();
 	
-	// LogError("Generated Tri: " + omesh.toString());
+	LogError("Generated Tri: " + omesh.toString());
 	
 	return omesh;
 };
 
 Mesh.createSingleQuadMesh = function (a, b, c, d, twosided) {
 	var omesh = Mesh.createSingleTriangleMesh(a, b, c, twosided);
-	var vd = new Vertex();
-	vd.position = $V(d);
-	vd.normal = omesh.vertices[0].normal;
-	omesh.vertices.push(vd);
-	
-	var f1 = new Face();
-	f1.indices.setElements([omesh.vertices.length - 1, 2, 0]);
-	omesh.faces.push(f1);
+	var idx = omesh.addVertex($V(d), omesh.vertices[0].normal);
+	omesh.addFace(idx, 2, 0);
 	
 	if (twosided) {
-		var vd2 = new Vertex();
-		vd2.position = $V(d);
-		vd2.normal = omesh.vertices[4].normal;
-		omesh.vertices.push(vd2);
-
-		var f2 = new Face();
-		f2.indices.setElements([3, 5, omesh.vertices.length - 1]);
-		omesh.faces.push(f2);
+		var idx2 = omesh.addVertex($V(d), omesh.vertices[3].normal);
+		omesh.addFace(3, 5, idx2);
 	}
 	
 	omesh._packArrays();
@@ -252,45 +269,63 @@ Mesh.createCircleMesh = function (center, radius, normal, twosided, ccw) {
 }
 
 Mesh.createCubeMesh = function(dim, twosided, ccw) {
-	var omesh;
+	var omesh = new Mesh();
+	
+	// values copied from MDN cube example
 	
 	// Front face
-	omesh.addVertex($V([-1.0, -1.0,  1.0]));
-	omesh.addVertex($V([ 1.0, -1.0,  1.0]));
-	omesh.addVertex($V([ 1.0,  1.0,  1.0]));
-	omesh.addVertex($V([-1.0,  1.0,  1.0]));
-	// omesh.addFace(
+	var face = [];
+	face[0] = omesh.addVertex($V([-1.0, -1.0,  1.0]), $V([0,0,1]), $V([0.0,  0.0]));
+	face[1] = omesh.addVertex($V([ 1.0, -1.0,  1.0]), $V([0,0,1]), $V([1.0,  0.0]));
+	face[2] = omesh.addVertex($V([ 1.0,  1.0,  1.0]), $V([0,0,1]), $V([1.0,  1.0]));
+	face[3] = omesh.addVertex($V([-1.0,  1.0,  1.0]), $V([0,0,1]), $V([0.0,  1.0]));
+	omesh.addFace(face[2], face[1], face[0], face[0].normal);
+	omesh.addFace(face[3], face[2], face[0], face[0].normal);
 
 	// Back face
-	omesh.addVertex($V([-1.0, -1.0, -1.0]));
-	omesh.addVertex($V([-1.0,  1.0, -1.0]));
-	omesh.addVertex($V([ 1.0,  1.0, -1.0]));
-	omesh.addVertex($V([ 1.0, -1.0, -1.0]));
+	face[0] = omesh.addVertex($V([-1.0, -1.0, -1.0]), $V([0,0,-1]), $V([0.0,  0.0]));
+	face[1] = omesh.addVertex($V([-1.0,  1.0, -1.0]), $V([0,0,-1]), $V([1.0,  0.0]));
+	face[2] = omesh.addVertex($V([ 1.0,  1.0, -1.0]), $V([0,0,-1]), $V([1.0,  1.0]));
+	face[3] = omesh.addVertex($V([ 1.0, -1.0, -1.0]), $V([0,0,-1]), $V([0.0,  1.0]));
+	omesh.addFace(face[2], face[1], face[0], face[0].normal);
+	omesh.addFace(face[3], face[2], face[0], face[0].normal);
 
 	// Top face
-	omesh.addVertex($V([-1.0,  1.0, -1.0]));
-	omesh.addVertex($V([-1.0,  1.0,  1.0]));
-	omesh.addVertex($V([ 1.0,  1.0,  1.0]));
-	omesh.addVertex($V([ 1.0,  1.0, -1.0]));
+	face[0] = omesh.addVertex($V([-1.0,  1.0, -1.0]), $V([0,1,0]), $V([0.0,  0.0]));
+	face[1] = omesh.addVertex($V([-1.0,  1.0,  1.0]), $V([0,1,0]), $V([1.0,  0.0]));
+	face[2] = omesh.addVertex($V([ 1.0,  1.0,  1.0]), $V([0,1,0]), $V([1.0,  1.0]));
+	face[3] = omesh.addVertex($V([ 1.0,  1.0, -1.0]), $V([0,1,0]), $V([0.0,  1.0]));
+	omesh.addFace(face[2], face[1], face[0], face[0].normal);
+	omesh.addFace(face[3], face[2], face[0], face[0].normal);
 
 	// Bottom face
-	omesh.addVertex($V([-1.0, -1.0, -1.0]));
-	omesh.addVertex($V([ 1.0, -1.0, -1.0]));
-	omesh.addVertex($V([ 1.0, -1.0,  1.0]));
-	omesh.addVertex($V([-1.0, -1.0,  1.0]));
+	face[0] = omesh.addVertex($V([-1.0, -1.0, -1.0]), $V([0,-1,0]), $V([0.0,  0.0]));
+	face[1] = omesh.addVertex($V([ 1.0, -1.0, -1.0]), $V([0,-1,0]), $V([1.0,  0.0]));
+	face[2] = omesh.addVertex($V([ 1.0, -1.0,  1.0]), $V([0,-1,0]), $V([1.0,  1.0]));
+	face[3] = omesh.addVertex($V([-1.0, -1.0,  1.0]), $V([0,-1,0]), $V([0.0,  1.0]));
+	omesh.addFace(face[2], face[1], face[0], face[0].normal);
+	omesh.addFace(face[3], face[2], face[0], face[0].normal);
 
 	// Right face
-	omesh.addVertex($V([1.0, -1.0, -1.0]));
-	omesh.addVertex($V([1.0,  1.0, -1.0]));
-	omesh.addVertex($V([1.0,  1.0,  1.0]));
-	omesh.addVertex($V([1.0, -1.0,  1.0]));
+	face[0] = omesh.addVertex($V([1.0, -1.0, -1.0]), $V([1,0,0]), $V([0.0,  0.0]));
+	face[1] = omesh.addVertex($V([1.0,  1.0, -1.0]), $V([1,0,0]), $V([1.0,  0.0]));
+	face[2] = omesh.addVertex($V([1.0,  1.0,  1.0]), $V([1,0,0]), $V([1.0,  1.0]));
+	face[3] = omesh.addVertex($V([1.0, -1.0,  1.0]), $V([1,0,0]), $V([0.0,  1.0]));
+	omesh.addFace(face[2], face[1], face[0], face[0].normal);
+	omesh.addFace(face[3], face[2], face[0], face[0].normal);
 
 	// Left face
-	omesh.addVertex($V([-1.0, -1.0, -1.0]));
-	omesh.addVertex($V([-1.0, -1.0,  1.0]));
-	omesh.addVertex($V([-1.0,  1.0,  1.0]));
-	omesh.addVertex($V([-1.0,  1.0, -1.0]));
+	face[0] = omesh.addVertex($V([-1.0, -1.0, -1.0]), $V([-1,0,0]), $V([0.0,  0.0]));
+	face[1] = omesh.addVertex($V([-1.0, -1.0,  1.0]), $V([-1,0,0]), $V([1.0,  0.0]));
+	face[2] = omesh.addVertex($V([-1.0,  1.0,  1.0]), $V([-1,0,0]), $V([1.0,  1.0]));
+	face[3] = omesh.addVertex($V([-1.0,  1.0, -1.0]), $V([-1,0,0]), $V([0.0,  1.0]));
+	omesh.addFace(face[2], face[1], face[0], face[0].normal);
+	omesh.addFace(face[3], face[2], face[0], face[0].normal);
+
+	omesh._packArrays();
+	omesh.initBuffers();
 	
+	LogError("Cube: " + omesh);
 	return omesh;
 };
 
