@@ -461,6 +461,7 @@ Shader.prototype = {
 
 
 Material.initDefaultMaterial = function() {
+	// default untextured
 	Material.DefaultVert = "attribute vec3 position;\n" +
 		"attribute vec3 normal;\n" +
 		"attribute vec2 uv;\n" +
@@ -495,4 +496,41 @@ Material.initDefaultMaterial = function() {
 		"}\n";
 	Material.DefaultShader = new Shader("Default", "DefaultVert", "DefaultFrag", Material.DefaultVert, Material.DefaultFrag);
 	Material.DefaultMaterial = new Material(Material.DefaultShader);
+	// default textured
+	Material.DefaultTexturedVert = "attribute vec3 position;\n" +
+		"attribute vec3 normal;\n" +
+		"attribute vec2 uv;\n" +
+		"\n" +
+		"varying vec4 oPosition;\n" +
+		"varying vec3 oNormal;\n" +
+		"varying highp vec2 oUv;\n" +
+		"\n" +
+		"// model matrix (positioning in space of your vertex)\n" +
+		"uniform mat4 modelMatrix;\n" +
+		"// camera positioning\n" +
+		"uniform mat4 viewMatrix;\n" +
+		"// perspective matrix (perspective projection camera)\n" +
+		"uniform mat4 projectionMatrix;\n" +
+		"\n" +
+		"void main(void) {\n" +
+		"	// pass normal, uv, and position through\n" +
+		"	oPosition = vec4(position, 1.0);\n" +
+		"	oNormal = normal;\n" +
+		"	oUv = uv;\n" +
+		"	// modify vertex pos by MVP (because col major PVM) matrix\n" +
+		"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;\n" +
+		"}\n";
+	Material.DefaultTexturedFrag = "precision mediump float;\n" +
+		"varying vec4 oPosition;\n" +
+		"varying vec3 oNormal;\n" +
+		"varying highp vec2 oUv;\n" +
+		"\n" +
+		"uniform sampler2D DefaultTexture"
+		"\n" +
+		"void main(void) {\n" +
+		"	// convert the position from range [-1, 1] to [0, 1] for colors\n" +
+		"	gl_FragColor = texture2D(DefaultTexture, oUv) * (oPosition + 1.0) * 0.5;\n" +
+		"}\n";
+	Material.DefaultTexturedShader = new Shader("Default Textured", "DefaultTexturedVert", "DefaultTexturedFrag", Material.DefaultTexturedVert, Material.DefaultTexturedFrag);
+	Material.DefaultTexturedMaterial = new Material(Material.DefaultTexturedShader);
 };

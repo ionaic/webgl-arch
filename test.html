@@ -11,7 +11,9 @@
 			var pos_el;
 			var rot_el;
 			var sca_el;
-			var mat_el;
+			var matr0_el;
+			var matr1_el;
+			var matr2_el;
 			function setTextNode(element, text) {
 				var currentChild = element.firstChild;
 				while (currentChild) {
@@ -27,7 +29,10 @@
 				setTextNode(pos_el, position);
 				setTextNode(rot_el, rotation);
 				setTextNode(sca_el, scale);
-				setTextNode(mat_el, matrix);
+				var matrows = matrix.split(/\n/g);
+				setTextNode(matr0_el, matrows[0]);
+				setTextNode(matr1_el, matrows[1]);
+				setTextNode(matr2_el, matrows[2]);
 			}
             function start() {
                 var canvas = document.getElementById("glcanvas");
@@ -36,7 +41,9 @@
 				pos_el = document.getElementById("position");
 				rot_el = document.getElementById("rotation");
 				sca_el = document.getElementById("scale");
-				mat_el = document.getElementById("matrix");
+				matr0_el = document.getElementById("matrix-r0");
+				matr1_el = document.getElementById("matrix-r1");
+				matr2_el = document.getElementById("matrix-r2");
 				
                 initGL(canvas);
 				
@@ -76,7 +83,7 @@
 					//cube.components.transform.RotateEuler(amount, amount, amount);
 					Scene.draw();
 					
-					LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.GetModelMatrix());
+					LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.components.transform.basis.toString());
 				}
 				window.setInterval(update, 1000/30);
             }
@@ -170,7 +177,11 @@
 			<div><span>Position: </span><span id="position"></span></div>
 			<div><span>Rotation: </span><span id="rotation"></span></div>
 			<div><span>Scale: </span><span id="scale"></span></div>
-			<div><span>Matrix: </span><span id="matrix"></span></div>
+			<ul style="list-style: none;"><span>Matrix: </span>
+				<li id="matrix-r0"></li>
+				<li id="matrix-r1"></li>
+				<li id="matrix-r2"></li>
+			</div>
 		</div>
 		<div id="err_log" style="overflow: scroll; height: 30em"></div>
     </body>

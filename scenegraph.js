@@ -16,6 +16,9 @@ VectorBasis.prototype = {
 		this.left = quat.rotate(this.left).normalize();
 		this.up = quat.rotate(this.up).normalize();
 		this.forward = quat.rotate(this.forward).normalize();
+	},
+	toString : function() {
+		return this.left.toString() + "\n" + this.up.toString() + "\n" + this.forward.toString() + "\n";
 	}
 }
 

@@ -283,12 +283,12 @@ Quaternion.MatrixToQuaternion = function(inMat) {
 }
 
 Quaternion.AxisAngleToQuaternion = function(axis, angle) {
-	var qv = axis.x(Math.sin(angle / 2 * DEG2RAD));
+	var qv = axis.normalize().x(Math.sin(angle / 2 * DEG2RAD));
 	var qs = Math.cos(angle / 2);
 	return (new Quaternion(qv, qs)).normalize();
 }
 Quaternion.AxisAngleRadToQuaternion = function(axis, angle) {
-	var qv = axis.x(Math.sin(angle / 2));
+	var qv = axis.normalize().x(Math.sin(angle / 2));
 	var qs = Math.cos(angle / 2);
 	return (new Quaternion(qv, qs)).normalize();
 }
