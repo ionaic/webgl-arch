@@ -59,7 +59,8 @@
 				// Scene.addChild(testSquare);
 				
 				var camera = new Camera(45, 640.0/480.0, 0.1, 100.0);
-				camera.components.transform.Translate([0, 0, -5]);
+				camera.components.transform.Translate([0, 0, 5]);
+				camera.components.transform.RotateEuler(0, 10, 0);
 				
 				testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
 				cube.components.transform.Translate([0.0, 0.0, -5.0]);
@@ -69,7 +70,8 @@
 				Scene.draw();
 				
 				var lastTime = Date.now();
-				var axis = $V([1, 1, 1]);
+				var axis = $V([1, 0, 0]).normalize();
+				LogError("Axis: " + axis);
 				
 				function update() {
 					// clear the color/depth buffers

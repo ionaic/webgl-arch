@@ -17,36 +17,40 @@ Vector.prototype.idx = function(index) {
 	return this.elements[index];
 }
 Vector.prototype.ensure4D = function() {
+	var tmp;
 	if (this.elements.length > 4) {
-		this.elements = this.elements.slice(0, 4);
-		return this;
-	}
-	
-	while (this.elements.length < 4) {
-		this.elements.push(0);
-	}
-	return this;
-}
-Vector.prototype.ensure3D = function() {
-	if (this.elements.length > 3) {
-		this.elements = this.elements.slice(0, 3);
-		return this;
-	}
-	
-	while (this.elements.length < 3) {
-		this.elements.push(0);
-	}
-	return this;
-}
-Vector.prototype.homogenize = function() {
-	this.ensure4D();
-	if (this.elements[3] != 0) {
-		this.x(1 / this.elements[3]);
+		tmp = this.elements.slice(0, 4);
 	}
 	else {
-		this.elements[3] = 1;
+		tmp = this.elements;
+		while (this.elements.length < 4) {
+			tmp.push(0);
+		}
 	}
-	return this;
+	return $V(tmp);
+}
+Vector.prototype.ensure3D = function() {
+	var tmp;
+	if (this.elements.length > 3) {
+		tmp = this.elements.slice(0, 3);
+	}
+	else {
+		tmp = this.elements;
+		while (this.elements.length < 3) {
+			tmp.push(0);
+		}
+	}
+	return $V(tmp);
+}
+Vector.prototype.homogenize = function() {
+	var tmp = this.ensure4D();
+	if (tmp.elements[3] != 0) {
+		tmp.x(1 / tmp.elements[3]);
+	}
+	else {
+		tmp.elements[3] = 1;
+	}
+	return tmp;
 }
 Matrix.prototype.idx = function(i, j) {
 	if (i > this.rows() || j > this.cols() || i < 0 || j < 0) {
@@ -124,8 +128,7 @@ Quaternion.prototype = {
 		return new Quaternion(this.qv.x(k), this.qs * k);
 	},
 	toVector : function() {
-		var tmp = $V(this.qv.elements);
-		tmp.elements.push(this.qs);
+		var tmp = $V(this.qv.elements.concat(this.qs));
 		return tmp;
 	},
 	fromVector : function(vec) {
@@ -284,7 +287,7 @@ Quaternion.MatrixToQuaternion = function(inMat) {
 
 Quaternion.AxisAngleToQuaternion = function(axis, angle) {
 	var qv = axis.normalize().x(Math.sin(angle / 2 * DEG2RAD));
-	var qs = Math.cos(angle / 2);
+	var qs = Math.cos(angle / 2 * DEG2RAD);
 	return (new Quaternion(qv, qs)).normalize();
 }
 Quaternion.AxisAngleRadToQuaternion = function(axis, angle) {

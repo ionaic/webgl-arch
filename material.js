@@ -364,7 +364,13 @@ Shader.prototype = {
 		else {
 			LogError("Linking shader program " + this.name + ".\n" + gl.getProgramInfoLog(this.program));
 		}
+		// gl.useProgram(this.program);
+	},
+	useProgram : function() {
 		gl.useProgram(this.program);
+	},
+	releaseProgram : function () {
+		gl.useProgram(null);
 	},
 	_parseVariables : function () {
 		// automatically parse the shader source to grab all the uniforms and attributes
@@ -386,6 +392,7 @@ Shader.prototype = {
 		this.vertexAttributes.uv.varNumber = 2;
 	},
 	getUniformLocations : function() {
+		this.useProgram();
 		for (var uniform in this.shaderUniforms) {
 			if (this.shaderUniforms[uniform] instanceof ShaderUniform) {
 				this.shaderUniforms[uniform].varLocation = gl.getUniformLocation(this.program, this.shaderUniforms[uniform].name);
@@ -397,10 +404,12 @@ Shader.prototype = {
 				LogError("Uniform: " + uniform.toString() + " not instance of ShaderUniform");
 			}
 		}
+		this.releaseProgram();
 	},
 	setUniforms : function () {
 		//TODO is it good to get the uniform locations each time you set them?
 		this.getUniformLocations();
+		this.useProgram();
 		for (var uniform in this.shaderUniforms) {
 			if (this.shaderUniforms[uniform] instanceof ShaderUniform) {
 				this.shaderUniforms[uniform].setUniform();
@@ -414,6 +423,7 @@ Shader.prototype = {
 		}
 	},
 	getAttributeLocations : function() {
+		this.useProgram();
 		for (var attr in this.vertexAttributes) {
 			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
 				this.vertexAttributes[attr].varLocation = gl.getAttribLocation(this.program, this.vertexAttributes[attr].name);
@@ -425,8 +435,10 @@ Shader.prototype = {
 				LogError("Attr: " + attr.toString() + " not instance of VertexAttribute");
 			}
 		}
+		this.releaseProgram();
 	},
 	useAttributes : function() {
+		this.useProgram();
 		for (var attr in this.vertexAttributes) {
 			if (this.vertexAttributes[attr] instanceof VertexAttribute) {
 				gl.enableVertexAttribArray(this.vertexAttributes[attr].varLocation);
@@ -525,12 +537,12 @@ Material.initDefaultMaterial = function() {
 		"varying vec3 oNormal;\n" +
 		"varying highp vec2 oUv;\n" +
 		"\n" +
-		"uniform sampler2D DefaultTexture"
+		"uniform sampler2D DefaultTexture;\n" + 
 		"\n" +
 		"void main(void) {\n" +
 		"	// convert the position from range [-1, 1] to [0, 1] for colors\n" +
 		"	gl_FragColor = texture2D(DefaultTexture, oUv) * (oPosition + 1.0) * 0.5;\n" +
 		"}\n";
-	Material.DefaultTexturedShader = new Shader("Default Textured", "DefaultTexturedVert", "DefaultTexturedFrag", Material.DefaultTexturedVert, Material.DefaultTexturedFrag);
+	Material.DefaultTexturedShader = new Shader("DefaultTextured", "DefaultTexturedVert", "DefaultTexturedFrag", Material.DefaultTexturedVert, Material.DefaultTexturedFrag);
 	Material.DefaultTexturedMaterial = new Material(Material.DefaultTexturedShader);
 };

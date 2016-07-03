@@ -51,7 +51,7 @@ Transform.prototype = {
 		this.basis.Rotate(Quaternion.AxisAngleToQuaternion(axis, angle));
 	},
 	RotateEuler : function(roll, pitch, yaw) {
-		var quat = Quaternion.EulerToQuaternion([roll, pitch, yaw])
+		var quat = Quaternion.EulerToQuaternion([roll, pitch, yaw]);
 		this.basis.Rotate(quat);
 	},
 	Scale : function(x, y, z) {
@@ -158,7 +158,7 @@ function Camera(inFov, inAspect, inNearPlane, inFarPlane) {
 Camera.prototype = Object.create(SceneObject.prototype, {
 	GetViewMatrix : {
 		value : function() {
-			return this.components.transform.GetTransformMatrix();
+			return this.GetViewToWorldMatrix().inverse();
 		},
 		enumerable : false,
 		configurable : true,
@@ -166,7 +166,7 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 	},
 	GetViewToWorldMatrix : {
 		value : function() {
-			return this.GetViewMatrix().inverse();
+			return this.components.transform.GetTransformMatrix();
 		},
 		enumerable : false,
 		configurable : true,
