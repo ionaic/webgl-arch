@@ -286,18 +286,23 @@ Quaternion.MatrixToQuaternion = function(inMat) {
 }
 
 Quaternion.AxisAngleToQuaternion = function(axis, angle) {
-	var qv = axis.normalize().x(Math.sin(angle / 2 * DEG2RAD));
-	var qs = Math.cos(angle / 2 * DEG2RAD);
+	var qv = axis.ensure3D().normalize().x(Math.sin(angle / 2.0 * DEG2RAD));
+	var qs = Math.cos(angle / 2.0 * DEG2RAD);
 	return (new Quaternion(qv, qs)).normalize();
 }
 Quaternion.AxisAngleRadToQuaternion = function(axis, angle) {
-	var qv = axis.normalize().x(Math.sin(angle / 2));
-	var qs = Math.cos(angle / 2);
+	var qv = axis.ensure3D().normalize().x(Math.sin(angle / 2.0));
+	var qs = Math.cos(angle / 2.0);
 	return (new Quaternion(qv, qs)).normalize();
 }
 
 Quaternion.prototype.ToEuler = function() { return Quaternion.QuaternionToEuler(this); };
 Quaternion.prototype.ToMatrix = function() { return Quaternion.QuaternionToMatrix(this); };
+
+Quaternion.create = function(inarg) {
+	return new Quaternion(inarg);
+}
+$Q = Quaternion.create;
 
 function TriangulatePolygon(vertArray, ccw) {
 	if (ccw == null) {

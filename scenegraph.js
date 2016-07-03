@@ -17,6 +17,11 @@ VectorBasis.prototype = {
 		this.up = quat.rotate(this.up).normalize();
 		this.forward = quat.rotate(this.forward).normalize();
 	},
+	Transform : function(matrix) {
+		this.left = matrix.multiply(this.left);
+		this.up = matrix.multiply(this.up);
+		this.forward = matrix.multiply(this.forward);
+	},
 	toString : function() {
 		return this.left.toString() + "\n" + this.up.toString() + "\n" + this.forward.toString() + "\n";
 	}
@@ -191,6 +196,7 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 	},
 	SetCameraMatrices : {
 		value : function(material) {
+			// material.setViewMatrix(Matrix.I(4));
 			material.setViewMatrix(this.GetViewMatrix());
 			material.setProjectionMatrix(this.GetProjectionMatrix());
 		},
@@ -205,11 +211,52 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 		enumerable : false,
 		configurable : true,
 		writable : true
+	},
+	LookAt : {
+		value : function(point) {
+			// var lookatMat = Camera.MakeLookatMatrix(this.components.transform.position, point, this.components.transform.basis.up);
+			// this.components.transform.basis.Transform(lookatMat);
+			LogError("Original forward: " + this.components.transform.basis.forward);
+			var lookatQuat = Camera.MakeLookatQuaternion(this.components.transform.position, point, this.components.transform.basis.forward);
+			this.components.transform.basis.Rotate(lookatQuat);
+			LogError("Intended forward: " + this.components.transform.position.subtract(point).normalize());
+			LogError("True forward: " + this.components.transform.basis.forward);
+		},
+		enumerable : false,
+		configurable : true,
+		writable : true,
 	}
 });
 Camera.prototype.constructor = Camera;
 
 Camera.MakePerspectiveMatrix = makePerspective
+Camera.MakeLookatMatrix = function(eye, point, upV) {
+	var f = point.subtract(eye).normalize();
+	var up = upV.ensure3D().normalize();
+	var s = f.cross(up);
+	var u = s.cross(f);
+	var M = $M([
+		s.elements.concat(0),
+		u.elements.concat(0),
+		f.x(-1).elements.concat(0),
+		[0, 0, 0, 1]
+	]);
+	var T = Matrix.I(4);
+	T.elements[0][3] = eye.idx(0);
+	T.elements[1][3] = eye.idx(1);
+	T.elements[2][3] = eye.idx(2);
+	return M.multiply(T);
+}
+Camera.MakeLookatQuaternion = function(eye, point, inForward) {
+	var f = point.subtract(eye).normalize();
+	var forward = inForward.ensure3D().normalize();
+	var dot = forward.dot(f);
+	var angle = Math.acos(dot);
+	var axis = f.cross(forward).normalize();
+	// var axis = forward.cross(f).normalize();
+	LogError("Lookat: " + axis + "::" + (angle * RAD2DEG));
+	return Quaternion.AxisAngleRadToQuaternion(axis, angle);
+}
 
 function Light() {
 	

@@ -491,6 +491,7 @@ Material.initDefaultMaterial = function() {
 		"\n" +
 		"void main(void) {\n" +
 		"	// pass normal, uv, and position through\n" +
+		"   // using the pre-transform position so the color sticks to the cube instead of shifting as it moves\n" +
 		"	oPosition = vec4(position, 1.0);\n" +
 		"	oNormal = normal;\n" +
 		"	oUv = uv;\n" +
