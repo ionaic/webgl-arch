@@ -183,7 +183,7 @@ Quaternion.prototype = {
 	},
 	rotate : function(v) {
 		// rotate a vector v using this quaternion
-		var vquat = new Quaternion(v.ensure4D());
+		var vquat = (new Quaternion(v.ensure4D())).normalize();
 		return this.mul(vquat).mul(this.inverse()).toVector();
 	},
 	toString : function() {
