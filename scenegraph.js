@@ -196,7 +196,6 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 	},
 	SetCameraMatrices : {
 		value : function(material) {
-			// material.setViewMatrix(Matrix.I(4));
 			material.setViewMatrix(this.GetViewMatrix());
 			material.setProjectionMatrix(this.GetProjectionMatrix());
 		},
@@ -217,7 +216,7 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 			// var lookatMat = Camera.MakeLookatMatrix(this.components.transform.position, point, this.components.transform.basis.up);
 			// this.components.transform.basis.Transform(lookatMat);
 			LogError("Original forward: " + this.components.transform.basis.forward);
-			var lookatQuat = Camera.MakeLookatQuaternion(this.components.transform.position, point, this.components.transform.basis.forward);
+			var lookatQuat = Camera.MakeLookatQuaternion(this.components.transform.position, point, this.components.transform.basis.forward, this.components.transform.basis.up);
 			this.components.transform.basis.Rotate(lookatQuat);
 			LogError("Intended forward: " + this.components.transform.position.subtract(point).normalize());
 			LogError("True forward: " + this.components.transform.basis.forward);
@@ -247,12 +246,20 @@ Camera.MakeLookatMatrix = function(eye, point, upV) {
 	T.elements[2][3] = eye.idx(2);
 	return M.multiply(T);
 }
-Camera.MakeLookatQuaternion = function(eye, point, inForward) {
-	var f = point.subtract(eye).normalize();
+Camera.MakeLookatQuaternion = function(eye, point, inForward, up) {
+	var f = eye.subtract(point).normalize();
 	var forward = inForward.ensure3D().normalize();
 	var dot = forward.dot(f);
+	if (Math.abs(dot - (-1.0)) < 0.00001) {
+		// angle is 180 degrees (pi radians)
+		return $Q(up.ensure3D().normalize(), Math.PI);
+	}
+	if (Math.abs(dot - 1.0) < 0.00001) {
+		// nearly equal angles
+		return Quaternion.identity;
+	}
 	var angle = Math.acos(dot);
-	var axis = f.cross(forward).normalize();
+	var axis = forward.cross(f).normalize();
 	// var axis = forward.cross(f).normalize();
 	LogError("Lookat: " + axis + "::" + (angle * RAD2DEG));
 	return Quaternion.AxisAngleRadToQuaternion(axis, angle);

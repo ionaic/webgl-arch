@@ -298,6 +298,7 @@ Quaternion.AxisAngleRadToQuaternion = function(axis, angle) {
 
 Quaternion.prototype.ToEuler = function() { return Quaternion.QuaternionToEuler(this); };
 Quaternion.prototype.ToMatrix = function() { return Quaternion.QuaternionToMatrix(this); };
+Quaternion.identity = new Quaternion($V([0,0,0]), 1);
 
 Quaternion.create = function(inarg) {
 	return new Quaternion(inarg);

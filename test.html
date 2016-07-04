@@ -14,6 +14,12 @@
 			var matr0_el;
 			var matr1_el;
 			var matr2_el;
+			var cam_pos;
+			var cam_rot;
+			var cam_sca;
+			var cam_mat0;
+			var cam_mat1;
+			var cam_mat2;
 			function setTextNode(element, text) {
 				var currentChild = element.firstChild;
 				while (currentChild) {
@@ -34,6 +40,15 @@
 				setTextNode(matr1_el, matrows[1]);
 				setTextNode(matr2_el, matrows[2]);
 			}
+			function LogCamera(camera) {
+				setTextNode(cam_pos, camera.components.transform.position.toString());
+				setTextNode(cam_rot, $V(camera.components.transform.rotation()).x(RAD2DEG).toString());
+				setTextNode(cam_sca, JSON.stringify(camera.components.transform.scale));
+				var matrows = camera.components.transform.basis.toString().split(/\n/g);
+				setTextNode(cam_mat0, matrows[0]);
+				setTextNode(cam_mat1, matrows[1]);
+				setTextNode(cam_mat2, matrows[2]);
+			}
             function start() {
                 var canvas = document.getElementById("glcanvas");
 				LogElement = document.getElementById("err_log");
@@ -44,6 +59,13 @@
 				matr0_el = document.getElementById("matrix-r0");
 				matr1_el = document.getElementById("matrix-r1");
 				matr2_el = document.getElementById("matrix-r2");
+				
+				cam_pos = document.getElementById("camera-position");
+				cam_rot = document.getElementById("camera-rotation");
+				cam_sca = document.getElementById("camera-scale");
+				cam_mat0 = document.getElementById("camera-matrix-r0");
+				cam_mat1 = document.getElementById("camera-matrix-r1");
+				cam_mat2 = document.getElementById("camera-matrix-r2");
 				
                 initGL(canvas);
 				
@@ -68,6 +90,8 @@
 				camera.LookAt(cube.components.transform.position);
 				
 				camera.SetCameraMatrices(testSquare.components.material);
+				
+				LogCamera(camera);
 
 				Scene.draw();
 				
@@ -85,10 +109,47 @@
 					//testSquare.components.transform.Rotate(axis, amount);
 					cube.components.transform.Rotate(axis, amount);
 					//cube.components.transform.RotateEuler(amount, amount, amount);
+					camera.SetCameraMatrices(testSquare.components.material);
 					Scene.draw();
 					
 					LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.components.transform.basis.toString());
 				}
+				var moveAmount = 1;
+				function moveCamera(event) {
+					var eventBubble = true;
+					LogError("KeyPress: " + event.keyCode);
+					if (event.keyCode == 37) {
+						// left
+						camera.components.transform.Translate(camera.components.transform.basis.left.x(moveAmount).ensure3D());
+						camera.LookAt(cube.components.transform.position);
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 39) {
+						// right
+						camera.components.transform.Translate(camera.components.transform.basis.left.x(-1 * moveAmount).ensure3D());
+						camera.LookAt(cube.components.transform.position);
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 38) {
+						// up
+						camera.components.transform.Translate(camera.components.transform.basis.forward.x(-1 * moveAmount).ensure3D())
+						camera.LookAt(cube.components.transform.position);
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 40) {
+						// down
+						camera.components.transform.Translate(camera.components.transform.basis.forward.x(moveAmount).ensure3D())
+						camera.LookAt(cube.components.transform.position);
+						eventBubble = false;
+						event.preventDefault();
+					}
+					LogCamera(camera);
+					return eventBubble;
+				}
+				document.addEventListener('keydown', moveCamera);
 				window.setInterval(update, 1000/30);
             }
         </script>
@@ -181,11 +242,21 @@
 			<div><span>Position: </span><span id="position"></span></div>
 			<div><span>Rotation: </span><span id="rotation"></span></div>
 			<div><span>Scale: </span><span id="scale"></span></div>
-			<ul style="list-style: none;"><span>Matrix: </span>
+			<ul style="list-style: none;"><span>Model Matrix: </span>
 				<li id="matrix-r0"></li>
 				<li id="matrix-r1"></li>
 				<li id="matrix-r2"></li>
-			</div>
+			</ul>
+		</div>
+		<div id="camera-transform"><div>Camera:</div>
+			<div><span>Position: </span><span id="camera-position"></span></div>
+			<div><span>Rotation: </span><span id="camera-rotation"></span></div>
+			<div><span>Scale: </span><span id="camera-scale"></span></div>
+			<ul style="list-style: none;"><span>View Matrix: </span>
+				<li id="camera-matrix-r0"></li>
+				<li id="camera-matrix-r1"></li>
+				<li id="camera-matrix-r2"></li>
+			</ul>
 		</div>
 		<div id="err_log" style="overflow: scroll; height: 30em"></div>
     </body>
