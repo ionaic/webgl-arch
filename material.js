@@ -99,7 +99,6 @@ ShaderUniform.prototype = {
 					}
 					break;
 				case 4:
-					LogError(this.name + ": " + this.varValue);
 					// floating type
 					if (this.varType == gl.FLOAT) {
 						gl.uniformMatrix4fv(this.varLocation, false, this.varValue.flatten() || this.varValue);
