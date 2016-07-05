@@ -1,7 +1,9 @@
-function Vertex(inPosition, inNormal, inUv) {
+function Vertex(inPosition, inNormal, inUv, inColor) {
 	this.position = inPosition || $V([0, 0, 0, 1]);
 	this.normal = inNormal || $V([0, 0, 0]);
 	this.uv = inUv || $V([0, 0]);
+	// null if no color given
+	this.color = inColor;
 }
 function Face(inIndices, inNormal) {
 	this.indices = inIndices || $V([0, 0, 0]);
@@ -22,20 +24,42 @@ function Mesh() {
 	this.normalBuffer = null;
 	this.uvBuffer = null;
 	this.indexBuffer = null;
+	this.colorBuffer = null;
 	// draw indexed or no
 	this.drawIndexed = true;
 	// draw lines mode for debugging
 	this.drawWireframe = false;
+	this.drawMode = null;
+	this.isVertexColored = false;
 }
 
 Mesh.prototype = {
-	addVertex : function(pos, norm, uv) {
-		this.vertices.push(new Vertex(pos, norm, uv));
+	addVertex : function(pos, norm, uv, color) {
+		if (color != null) {
+			this.isVertexColored = true;
+		}
+		this.vertices.push(new Vertex(pos, norm, uv, color));
 		return this.vertices.length - 1;
 	},
 	addFace : function(v1, v2, v3, inNorm) {
 		var calcNorm = (this.vertices[v1].normal + this.vertices[v2].normal + this.vertices[v3].normal) / 3;
 		this.faces.push(new Face($V([v1,v2,v3]), inNorm || calcNorm));
+	},
+	addLine : function(v1, v2) {
+		this.faces.push(new Face($V([v1,v2]), $V([0,0,0])));
+	},
+	checkVertexColoring : function() {
+		// if it is set as vertex colored, don't change it
+		if (this.isVertexColored) {
+			return;
+		}
+		// set to false to ensure it's a boolean not another falsey value
+		this.isVertexColored = false;
+		for (var vidx = 0; vidx < this.vertices.length; ++vidx) {
+			if (this.vertices[vidx].color != null) {
+				this.isVertexColored = true;
+			}
+		}
 	},
 	_packArrays : function() {
 		var tmpVerts = [];
@@ -55,6 +79,14 @@ Mesh.prototype = {
 		this._normals = Float32Array.from(tmpNormals);
 		this._uv = Float32Array.from(tmpUV);
 		this._indices = Uint16Array.from(tmpIndices);
+		if (this.isVertexColored) {
+			var tmpColors = [];
+			for (var vidx = 0; vidx < this.vertices.length; ++vidx) {
+				var v = this.vertices[vidx];
+				tmpColors.concat(v.color.elements || Color.lightGray.elements);
+			}
+			this._colors = Float32Array.from(tmpColors);
+		}
 	},
 	initBuffers : function() {
 		if (this.vertexBuffer == null) {
@@ -68,6 +100,9 @@ Mesh.prototype = {
 		}
 		if (this.uvBuffer == null) {
 			this.uvBuffer = gl.createBuffer();
+		}
+		if (this.isVertexColored && this.colorBuffer == null) {
+			this.colorBuffer = gl.createBuffer();
 		}
 		
 		if (this.vertices == null || this._vertices == null) {
@@ -110,6 +145,11 @@ Mesh.prototype = {
 			gl.bindBuffer(gl.ELEMENT_ARRAY_BUFFER, this.indexBuffer);
 			gl.bufferData(gl.ELEMENT_ARRAY_BUFFER, this._indices, gl.STATIC_DRAW);
 		}
+		
+		if (this.isVertexColored && this._colors != null) {
+			gl.bindBuffer(gl.ARRAY_BUFFER, this.colorBuffer);
+			gl.bufferData(gl.ARRAY_BUFFER, this._colors, gl.STATIC_DRAW);
+		}
 	},
 	hasMesh : function() {
 		return !(this.vertexBuffer == null || this.indexBuffer == null || this.normalBuffer == null || this.uvBuffer == null);
@@ -132,14 +172,17 @@ Mesh.prototype = {
 	},
 	_drawMesh : function() {
 		this._bindBuffers();
+		
+		var mode = this.drawMode || this.drawWireframe ? gl.LINE_LOOP : gl.TRIANGLES;
+		
 		if (this.drawIndexed) {
 			// drawElements(mode, number, type, offset)
-			gl.drawElements(this.drawWireframe ? gl.LINE_LOOP : gl.TRIANGLES, this._indices.length, gl.UNSIGNED_SHORT, 0);
+			gl.drawElements(mode, this._indices.length, gl.UNSIGNED_SHORT, 0);
 		}
 		else {
 			// drawArrays(mode, first, count)
 			LogError("Drawing len: " + this._vertices.length);
-			gl.drawArrays(this.drawWireframe ? gl.LINE_LOOP : gl.TRIANGLES, 0, this._vertices.length / 3);
+			gl.drawArrays(mode, 0, this._vertices.length / 3);
 		}
 	},
 	toString : function(full) {

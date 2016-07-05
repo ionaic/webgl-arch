@@ -1,5 +1,6 @@
 <html>
     <head>
+		<script type="text/javascript" src="mdn_compatibility.js"></script>
 		<script type="text/javascript" src="sylvester-0-1-3/sylvester.js"></script>
 		<script type="text/javascript" src="glUtil.js"></script>
         <script type="text/javascript" src="gl.js"></script>
@@ -81,11 +82,11 @@
 				// Scene.addChild(testSquare);
 				
 				var camera = new Camera(45, 640.0/480.0, 0.1, 100.0);
-				camera.components.transform.Translate([3, 0, 5]);
+				camera.components.transform.Translate([0, 0, 10]);
 				// camera.components.transform.RotateEuler(0, 10, 0);
 			
-				testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
-				cube.components.transform.Translate([0.0, 0.0, -5.0]);
+				//testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
+				//cube.components.transform.Translate([0.0, 0.0, -5.0]);
 				
 				camera.LookAt(cube.components.transform.position);
 				
@@ -114,7 +115,18 @@
 					cube.components.transform.Rotate(axis, amount);
 					//cube.components.transform.RotateEuler(amount, amount, amount);
 					camera.SetCameraMatrices(testSquare.components.material);
-					Scene.draw();
+					//Scene.draw();
+					var dbg_mesh = new Mesh();
+					dbg_mesh.addVertex(cube.components.transform.position, null, null, Color.red);
+					dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.left), null, null, Color.red);
+					dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.up), null, null, Color.red);
+					dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.forward), null, null, Color.red);
+					dbg_mesh.addLine(0, 1);
+					dbg_mesh.addLine(0, 2);
+					dbg_mesh.addLine(0, 3);
+					dbg_mesh.drawMode = gl.LINES;
+					Material.VertexColoredShader.setVertexAttribute("color", dbg_mesh.colorBuffer, gl.FLOAT, 4);
+					dbg_mesh.draw(Material.VertexColoredMaterial);
 					
 					LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.components.transform.basis.toString());
 				}

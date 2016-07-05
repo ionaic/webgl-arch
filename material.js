@@ -1,3 +1,8 @@
+function Color() {}
+Color.red = $V([1,0,0,1]);
+Color.white = $V([1,1,1,1]);
+Color.lightGray = $V([0.6, 0.6, 0.6, 1]);
+
 function VertexAttribute(inName) {
 	if (inName != null) {
 		this.name = inName
@@ -391,6 +396,11 @@ Shader.prototype = {
 		this.vertexAttributes.uv.varType = gl.FLOAT;
 		this.vertexAttributes.uv.varNumber = 2;
 	},
+	setVertexAttribute : function(name, buffer, type, num) {
+		this.vertexAttributes[name].varBuffer = buffer;
+		this.vertexAttributes[name].varType = type || gl.FLOAT;
+		this.vertexAttributes[name].varNumber = num;
+	},
 	getUniformLocations : function() {
 		this.useProgram();
 		for (var uniform in this.shaderUniforms) {
@@ -546,4 +556,44 @@ Material.initDefaultMaterial = function() {
 		"}\n";
 	Material.DefaultTexturedShader = new Shader("DefaultTextured", "DefaultTexturedVert", "DefaultTexturedFrag", Material.DefaultTexturedVert, Material.DefaultTexturedFrag);
 	Material.DefaultTexturedMaterial = new Material(Material.DefaultTexturedShader);
+	// vertex colored (useful for debugging purposes)
+	Material.VertexColoredVert = "attribute vec3 position;\n" +
+		"attribute vec3 normal;\n" +
+		"attribute vec2 uv;\n" +
+		"attribute vec4 color;\n" +
+		"\n" +
+		"varying vec4 oPosition;\n" +
+		"varying vec4 oColor;\n" + 
+		"varying vec3 oNormal;\n" +
+		"varying vec2 oUv;\n" +
+		"\n" +
+		"// model matrix (positioning in space of your vertex)\n" +
+		"uniform mat4 modelMatrix;\n" +
+		"// camera positioning\n" +
+		"uniform mat4 viewMatrix;\n" +
+		"// perspective matrix (perspective projection camera)\n" +
+		"uniform mat4 projectionMatrix;\n" +
+		"\n" +
+		"void main(void) {\n" +
+		"	// pass normal, uv, and position through\n" +
+		"   // using the pre-transform position so the color sticks to the cube instead of shifting as it moves\n" +
+		"	oPosition = vec4(position, 1.0);\n" +
+		"	oColor = color;\n" +
+		"	oNormal = normal;\n" +
+		"	oUv = uv;\n" +
+		"	// modify vertex pos by MVP (because col major PVM) matrix\n" +
+		"	gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;\n" +
+		"}\n";
+	Material.VertexColoredFrag = "precision mediump float;\n" +
+		"varying vec4 oPosition;\n" +
+		"varying vec4 oColor;\n" +
+		"varying vec3 oNormal;\n" +
+		"varying vec2 oUv;\n" +
+		"\n" +
+		"void main(void) {\n" +
+		"	gl_FragColor = oColor;\n" +
+		"}\n";
+	Material.VertexColoredShader = new Shader("VertexColored", "VertexColoredVert", "VertexColoredFrag", Material.VertexColoredVert, Material.VertexColoredFrag);
+	Material.VertexColoredShader.addVertexAttribute("color");
+	Material.VertexColoredMaterial = new Material(Material.VertexColoredShader);
 };
