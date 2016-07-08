@@ -55,7 +55,8 @@ Texture.prototype = {
 		gl.bindTexture(gl.TEXTURE_2D, null);
 	},
 	UseTexture : function() {
-		
+		this.BindTexture();
+		gl.activeTexture(gl.TEXTURE_2D);
 	},
 	GenerateMipMap : function(magFilter, minFilter) {
 		this.BindTexture();
@@ -218,6 +219,9 @@ Material.prototype = {
 			this.shaders[idx].initShader();
 			this.shaders[idx].setMeshAttributes(meshobj);
 		}
+	},
+	addTexture : function(name, srcImg, srcName, customMipMap, format, type) {
+		this.textures.push( new Texture(name, srcImg, srcName, customMipMap, format, type));
 	},
 	setModelViewProjection : function(model, view, projection) {
 		for (var idx = 0; idx < this.shaders.length; ++idx) {

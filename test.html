@@ -81,6 +81,8 @@
 				testSquare.components.material.addShader(Material.DefaultShader);
 				// Scene.addChild(testSquare);
 				
+				DefaultTexturedMaterial.addTexture("DefaultTexture", null, "texture_map_test.png");
+				
 				var camera = new Camera(45, 640.0/480.0, 0.1, 100.0);
 				camera.components.transform.Translate([0, 0, 10]);
 				// camera.components.transform.RotateEuler(0, 10, 0);
@@ -103,32 +105,35 @@
 				function LookAtCube() {
 					camera.LookAt(cube.components.transform.position);
 				}
-				
+				var pauseTime = false;
 				function update() {
-					// clear the color/depth buffers
-					gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 					var curTime = Date.now();
 					var deltaTime = (curTime - lastTime) / 1000; // time given is ms, get in seconds
 					lastTime = curTime;
-					var amount = 10 * deltaTime;
-					//testSquare.components.transform.Rotate(axis, amount);
-					cube.components.transform.Rotate(axis, amount);
-					//cube.components.transform.RotateEuler(amount, amount, amount);
-					camera.SetCameraMatrices(testSquare.components.material);
-					//Scene.draw();
-					var dbg_mesh = new Mesh();
-					dbg_mesh.addVertex(cube.components.transform.position, null, null, Color.red);
-					dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.left), null, null, Color.red);
-					dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.up), null, null, Color.red);
-					dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.forward), null, null, Color.red);
-					dbg_mesh.addLine(0, 1);
-					dbg_mesh.addLine(0, 2);
-					dbg_mesh.addLine(0, 3);
-					dbg_mesh.drawMode = gl.LINES;
-					Material.VertexColoredShader.setVertexAttribute("color", dbg_mesh.colorBuffer, gl.FLOAT, 4);
-					dbg_mesh.draw(Material.VertexColoredMaterial);
-					
-					LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.components.transform.basis.toString());
+					if (!pauseTime) {
+						// clear the color/depth buffers
+						gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+						var amount = 10 * deltaTime;
+						//testSquare.components.transform.Rotate(axis, amount);
+						cube.components.transform.Rotate(axis, amount);
+						//cube.components.transform.RotateEuler(amount, amount, amount);
+						camera.SetCameraMatrices(testSquare.components.material);
+						Scene.draw();
+						// var dbg_mesh = new Mesh();
+						// dbg_mesh.addVertex(cube.components.transform.position, null, null, Color.red);
+						// dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.left), null, null, Color.red);
+						// dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.up), null, null, Color.red);
+						// dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.forward), null, null, Color.red);
+						// dbg_mesh.addLine(0, 1);
+						// dbg_mesh.addLine(0, 2);
+						// dbg_mesh.addLine(0, 3);
+						// dbg_mesh.drawMode = gl.TRIANGLES;
+						// Material.VertexColoredShader.setVertexAttribute("color", dbg_mesh.colorBuffer, gl.FLOAT, 4);
+						// Material.VertexColoredMaterial.setModelMatrix(Matrix.I(4));
+						// dbg_mesh.draw(Material.VertexColoredMaterial);
+						
+						LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.components.transform.basis.toString());
+					}
 				}
 				var moveAmount = 1;
 				function moveCamera(event) {
@@ -158,6 +163,17 @@
 						// down
 						camera.components.transform.Translate(camera.components.transform.basis.forward.x(moveAmount).ensure3D());
 						LookAtCube();
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 32) {
+						// space
+						cube.components.transform.basis = new VectorBasis();
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode = 80) {
+						pauseTime = !pauseTime;
 						eventBubble = false;
 						event.preventDefault();
 					}
