@@ -81,7 +81,7 @@
 				testSquare.components.material.addShader(Material.DefaultShader);
 				// Scene.addChild(testSquare);
 				
-				DefaultTexturedMaterial.addTexture("DefaultTexture", null, "texture_map_test.png");
+				Material.DefaultTexturedMaterial.addTexture("DefaultTexture", null, "texture_map_test.png");
 				
 				var camera = new Camera(45, 640.0/480.0, 0.1, 100.0);
 				camera.components.transform.Translate([0, 0, 10]);
@@ -172,7 +172,7 @@
 						eventBubble = false;
 						event.preventDefault();
 					}
-					else if (event.keyCode = 80) {
+					else if (event.keyCode == 80) {
 						pauseTime = !pauseTime;
 						eventBubble = false;
 						event.preventDefault();

@@ -30,7 +30,8 @@ function Texture(inName, inSrcImg, inSrcName, customMipMap, inFormat, inType) {
 	if (inSrcImg == null) {
 		this.image.src = inSrcName;
 	}
-	this.image.onload = this.LoadImageToTexture;
+	var thisArg = this;
+	this.image.onload = function() {thisArg.LoadImageToTexture()};
 	this.mipimages = [];
 	// have to do a full check, not sure if the enum would eval to null ever
 	this.format = inFormat == null ? gl.RGBA : inFormat;
@@ -40,19 +41,20 @@ function Texture(inName, inSrcImg, inSrcName, customMipMap, inFormat, inType) {
 	}
 }
 Texture.prototype = {
-	LoadImageToTexture : function() {
-		this.BindTexture();
-		gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, this.image);
-		this.UnbindTexture();
-	},
-	AddMipMapLevel : function(level, image) {
-		
-	},
 	BindTexture : function() {
 		gl.bindTexture(gl.TEXTURE_2D, this.texture);
 	},
 	UnbindTexture : function() {
 		gl.bindTexture(gl.TEXTURE_2D, null);
+	},
+	LoadImageToTexture : function() {
+		LogError("this: " + this.toString());
+		gl.bindTexture(gl.TEXTURE_2D, this.texture);
+		gl.texImage2D(gl.TEXTURE_2D, 0, this.format, this.format, this.type, this.image);
+		this.UnbindTexture();
+	},
+	AddMipMapLevel : function(level, image) {
+		
 	},
 	UseTexture : function() {
 		this.BindTexture();
