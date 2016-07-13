@@ -8,6 +8,7 @@
         <script type="text/javascript" src="material.js"></script>
         <script type="text/javascript" src="scenegraph.js"></script>
         <script type="text/javascript" src="mathextras.js"></script>
+		<script type="text/javascript" src="TextureEnumArray.js"></script>
         <script type="text/javascript">
 			var pos_el;
 			var rot_el;
@@ -69,6 +70,7 @@
 				cam_mat2 = document.getElementById("camera-matrix-r2");
 				
                 initGL(canvas);
+				DefineTextureEnumArray(gl);
 				
 				var Scene = new SceneObject();
 				Scene.name = "Scene";
