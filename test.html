@@ -81,7 +81,7 @@
 				testSquare.components.material.addShader(Material.DefaultShader);
 				// Scene.addChild(testSquare);
 				
-				Material.DefaultTexturedMaterial.addTexture("DefaultTexture", null, "texture_map_test.png");
+				Material.DefaultTexturedMaterial.addTexture("DefaultTexture", document.getElementById("default-texture"), null);
 				
 				var camera = new Camera(45, 640.0/480.0, 0.1, 100.0);
 				camera.components.transform.Translate([0, 0, 10]);
@@ -290,5 +290,8 @@
 			</ul>
 		</div>
 		<div id="err_log" style="overflow: scroll; height: 30em"></div>
+		<div id="image_sources" style="visibility: hidden; display: none;">
+			<img id="default-texture" src="texture_map_test.png"></img>
+		</div>
     </body>
 </html>
