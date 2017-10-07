@@ -152,6 +152,7 @@ SceneObject.prototype = {
 
 function Camera(inFov, inAspect, inNearPlane, inFarPlane) {
 	SceneObject.call(this, "Camera");
+	
 	this.forward = $V([0,0,0]);
 	this.up = $V([0, 1, 0]);
 	this.fov = inFov;
@@ -163,6 +164,12 @@ function Camera(inFov, inAspect, inNearPlane, inFarPlane) {
 	this.GeneratePerspectiveMatrix();
 }
 Camera.prototype = Object.create(SceneObject.prototype, {
+	constructor : {
+		value : Camera,
+		enumerable : false,
+		configurable : true,
+		writable : true
+	},
 	GetViewMatrix : {
 		value : function() {
 			return this.GetViewToWorldMatrix().inverse();
@@ -226,8 +233,14 @@ Camera.prototype = Object.create(SceneObject.prototype, {
 		configurable : true,
 		writable : true,
 	},
+	draw : {
+		value :function(){
+			
+		},
+		
+	}
 });
-Camera.prototype.constructor = Camera;
+// Camera.prototype.constructor = Camera;
 
 Camera.MakePerspectiveMatrix = makePerspective
 Camera.MakeLookatMatrix = function(eye, point, upV) {
@@ -265,8 +278,14 @@ Camera.MakeLookatQuaternion = function(eye, point, inForward, up) {
 }
 
 function Light() {
-	
+	SceneObject.call(this, "Light");
 }
 Light.prototype = Object.create(SceneObject.prototype, {
+	constructor : {
+		value : Light,
+		enumerable : false,
+		configurable : true,
+		writable: true
+	},
 });
 Light.prototype.constructor = Light;

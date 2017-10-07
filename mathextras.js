@@ -94,6 +94,7 @@ function Quaternion(inQv, inQs) {
 	}
 }
 Quaternion.prototype = {
+	constructor : Quaternion,
 	copy : function() {
 		return new Quaternion(this.qv, this.qs);
 	},
