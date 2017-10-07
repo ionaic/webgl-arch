@@ -1,3 +1,5 @@
+'use strict';
+
 // constructor declaration/definitions
 function VectorBasis(left, up, forward) {
 	this.left = $V([1, 0, 0, 0]),

@@ -1,3 +1,5 @@
+'use strict';
+
 function Color() {}
 Color.red = $V([1,0,0,1]);
 Color.white = $V([1,1,1,1]);

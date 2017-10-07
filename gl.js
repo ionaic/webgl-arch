@@ -1,3 +1,5 @@
+'use strict';
+
 var gl = {}; // sets to an empty object, prevents null errors (they'll be silent)
 
 var LogElement; // element for error logging

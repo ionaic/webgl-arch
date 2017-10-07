@@ -1,0 +1,299 @@
+<html>
+    <head>
+		<script type="text/javascript" src="mdn_compatibility.js"></script>
+		<script type="text/javascript" src="sylvester-0-1-3/sylvester.js"></script>
+		<script type="text/javascript" src="glUtil.js"></script>
+        <script type="text/javascript" src="gl.js"></script>
+        <script type="text/javascript" src="mesh.js"></script>
+        <script type="text/javascript" src="material.js"></script>
+        <script type="text/javascript" src="scenegraph.js"></script>
+        <script type="text/javascript" src="mathextras.js"></script>
+		<script type="text/javascript" src="TextureEnumArray.js"></script>
+        <script type="text/javascript">
+			var pos_el;
+			var rot_el;
+			var sca_el;
+			var matr0_el;
+			var matr1_el;
+			var matr2_el;
+			var cam_pos;
+			var cam_rot;
+			var cam_sca;
+			var cam_mat0;
+			var cam_mat1;
+			var cam_mat2;
+			function setTextNode(element, text) {
+				var currentChild = element.firstChild;
+				while (currentChild) {
+					if (currentChild.nodeType == currentChild.TEXT_NODE) {
+						currentChild.textContent = text;
+						return;
+					}
+					currentChild = currentChild.nextSibling;
+				}
+				element.appendChild(document.createTextNode(text));
+			}
+			function LogTransform(position, rotation, scale, matrix) {
+				setTextNode(pos_el, position);
+				setTextNode(rot_el, rotation);
+				setTextNode(sca_el, scale);
+				var matrows = matrix.split(/\n/g);
+				setTextNode(matr0_el, matrows[0]);
+				setTextNode(matr1_el, matrows[1]);
+				setTextNode(matr2_el, matrows[2]);
+			}
+			function LogCamera(camera) {
+				setTextNode(cam_pos, camera.components.transform.position.toString());
+				setTextNode(cam_rot, $V(camera.components.transform.rotation()).x(RAD2DEG).toString());
+				setTextNode(cam_sca, JSON.stringify(camera.components.transform.scale));
+				var matrows = camera.components.transform.basis.toString().split(/\n/g);
+				setTextNode(cam_mat0, matrows[0]);
+				setTextNode(cam_mat1, matrows[1]);
+				setTextNode(cam_mat2, matrows[2]);
+			}
+            function start() {
+                var canvas = document.getElementById("glcanvas");
+				LogElement = document.getElementById("err_log");
+				
+				pos_el = document.getElementById("position");
+				rot_el = document.getElementById("rotation");
+				sca_el = document.getElementById("scale");
+				matr0_el = document.getElementById("matrix-r0");
+				matr1_el = document.getElementById("matrix-r1");
+				matr2_el = document.getElementById("matrix-r2");
+				
+				cam_pos = document.getElementById("camera-position");
+				cam_rot = document.getElementById("camera-rotation");
+				cam_sca = document.getElementById("camera-scale");
+				cam_mat0 = document.getElementById("camera-matrix-r0");
+				cam_mat1 = document.getElementById("camera-matrix-r1");
+				cam_mat2 = document.getElementById("camera-matrix-r2");
+				
+                initGL(canvas);
+				DefineTextureEnumArray(gl);
+				
+				var Scene = new SceneObject();
+				Scene.name = "Scene";
+				
+				var testSquare = new SceneObject("Square", Mesh.createSquareMesh(1.0, $V([0, 0, 1]), false));
+				var cube = new SceneObject("Cube", Mesh.createCubeMesh(1.0, true, true));
+				cube.components.material.addShader(Material.DefaultShader);
+				Scene.addChild(cube);
+				testSquare.components.mesh._packArrays();
+				testSquare.components.material.addShader(Material.DefaultShader);
+				// Scene.addChild(testSquare);
+				
+				Material.DefaultTexturedMaterial.addTexture("DefaultTexture", document.getElementById("default-texture"), null);
+				
+				var camera = new Camera(45, 640.0/480.0, 0.1, 100.0);
+				camera.components.transform.Translate([0, 0, 10]);
+				// camera.components.transform.RotateEuler(0, 10, 0);
+			
+				//testSquare.components.transform.Translate([0.0, 0.0, -5.0]);
+				//cube.components.transform.Translate([0.0, 0.0, -5.0]);
+				
+				camera.LookAt(cube.components.transform.position);
+				
+				camera.SetCameraMatrices(testSquare.components.material);
+				
+				LogCamera(camera);
+
+				Scene.draw();
+				
+				var lastTime = Date.now();
+				var axis = $V([1, 1, 1]).normalize();
+				LogError("Axis: " + axis);
+				
+				function LookAtCube() {
+					camera.LookAt(cube.components.transform.position);
+				}
+				var pauseTime = false;
+				function update() {
+					var curTime = Date.now();
+					var deltaTime = (curTime - lastTime) / 1000; // time given is ms, get in seconds
+					lastTime = curTime;
+					if (!pauseTime) {
+						// clear the color/depth buffers
+						gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
+						var amount = 10 * deltaTime;
+						//testSquare.components.transform.Rotate(axis, amount);
+						cube.components.transform.Rotate(axis, amount);
+						//cube.components.transform.RotateEuler(amount, amount, amount);
+						camera.SetCameraMatrices(testSquare.components.material);
+						Scene.draw();
+						// var dbg_mesh = new Mesh();
+						// dbg_mesh.addVertex(cube.components.transform.position, null, null, Color.red);
+						// dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.left), null, null, Color.red);
+						// dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.up), null, null, Color.red);
+						// dbg_mesh.addVertex(cube.components.transform.position.add(cube.components.transform.basis.forward), null, null, Color.red);
+						// dbg_mesh.addLine(0, 1);
+						// dbg_mesh.addLine(0, 2);
+						// dbg_mesh.addLine(0, 3);
+						// dbg_mesh.drawMode = gl.TRIANGLES;
+						// Material.VertexColoredShader.setVertexAttribute("color", dbg_mesh.colorBuffer, gl.FLOAT, 4);
+						// Material.VertexColoredMaterial.setModelMatrix(Matrix.I(4));
+						// dbg_mesh.draw(Material.VertexColoredMaterial);
+						
+						LogTransform(cube.components.transform.position.toString(), $V(cube.components.transform.rotation()).x(RAD2DEG).toString(), JSON.stringify(cube.components.transform.scale), cube.components.transform.basis.toString());
+					}
+				}
+				var moveAmount = 1;
+				function moveCamera(event) {
+					var eventBubble = true;
+					if (event.keyCode == 37) {
+						// left
+						camera.components.transform.Translate(camera.components.transform.basis.left.x(moveAmount).ensure3D());
+						LookAtCube();
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 39) {
+						// right
+						camera.components.transform.Translate(camera.components.transform.basis.left.x(-1 * moveAmount).ensure3D());
+						LookAtCube();
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 38) {
+						// up
+						camera.components.transform.Translate(camera.components.transform.basis.forward.x(-1 * moveAmount).ensure3D());
+						LookAtCube();
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 40) {
+						// down
+						camera.components.transform.Translate(camera.components.transform.basis.forward.x(moveAmount).ensure3D());
+						LookAtCube();
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 32) {
+						// space
+						cube.components.transform.basis = new VectorBasis();
+						eventBubble = false;
+						event.preventDefault();
+					}
+					else if (event.keyCode == 80) {
+						pauseTime = !pauseTime;
+						eventBubble = false;
+						event.preventDefault();
+					}
+					LogCamera(camera);
+					return eventBubble;
+				}
+				document.addEventListener('keydown', moveCamera);
+				window.setInterval(update, 1000/30);
+            }
+        </script>
+		<script id="shader-fs" type="x-shader/x-fragment">
+			// specifies floating point precision
+			precision mediump float;
+			
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
+		
+			void main(void) {
+				// convert the position from range [-1, 1] to [0, 1] for colors
+				gl_FragColor = (oPosition + 1.0) * 0.5;
+			}
+		</script>
+		<script id="shader-vs" type="x-shader/x-vertex">
+			attribute vec3 position;
+			attribute vec3 normal;
+			attribute vec2 uv;
+			
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
+			
+			// model matrix (positioning in space of your vertex)
+			uniform mat4 modelMatrix;
+			// camera positioning
+			uniform mat4 viewMatrix;
+			// perspective matrix (perspective projection camera)
+			uniform mat4 projectionMatrix;
+
+			void main(void) {
+				oPosition = vec4(position, 1.0);
+				gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;
+				oNormal = normal;
+				oUv = uv;
+			}
+		</script>
+		<script id="outline-fs" type="x-shader/x-fragment">
+			precision mediump float;
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
+
+			uniform vec4 outlineColor;
+			
+			void main(void) {
+				gl_FragColor = outlineColor;
+			}
+		</script>
+		<script id="outline-vs" type="x-shader/x-vertex">
+			attribute vec3 position;
+			attribute vec3 normal;
+			attribute vec2 uv;
+			
+			varying vec4 oPosition;
+			varying vec3 oNormal;
+			varying vec2 oUv;
+			
+			// model matrix (positioning in space of your vertex)
+			uniform mat4 modelMatrix;
+			// camera positioning
+			uniform mat4 viewMatrix;
+			// perspective matrix (perspective projection camera)
+			uniform mat4 projectionMatrix;
+
+			// uniform specifying how much to scale the mesh for an outline
+			uniform float outlineScale;
+			
+			void main(void) {
+				// pass normal, uv, and position through
+				oPosition = vec4(position, 1.0);
+				oNormal = normal;
+				oUv = uv;
+				
+				// scale the mesh uniformly to make it into an outline
+				oPosition = oPosition * outlineScale;
+				
+				// modify vertex pos by MVP (because col major PVM) matrix
+				gl_Position = projectionMatrix * viewMatrix * modelMatrix * oPosition;
+			}
+		</script>
+    </head>
+    <body onload="start();">
+        <canvas id="glcanvas" width="640" height="480">
+            Browser does not support the <code>&lt;canvas&gt;</code> element.
+        </canvas>
+		<div id="transform">
+			<div><span>Position: </span><span id="position"></span></div>
+			<div><span>Rotation: </span><span id="rotation"></span></div>
+			<div><span>Scale: </span><span id="scale"></span></div>
+			<ul style="list-style: none;"><span>Model Matrix: </span>
+				<li id="matrix-r0"></li>
+				<li id="matrix-r1"></li>
+				<li id="matrix-r2"></li>
+			</ul>
+		</div>
+		<div id="camera-transform"><div>Camera:</div>
+			<div><span>Position: </span><span id="camera-position"></span></div>
+			<div><span>Rotation: </span><span id="camera-rotation"></span></div>
+			<div><span>Scale: </span><span id="camera-scale"></span></div>
+			<ul style="list-style: none;"><span>View Matrix: </span>
+				<li id="camera-matrix-r0"></li>
+				<li id="camera-matrix-r1"></li>
+				<li id="camera-matrix-r2"></li>
+			</ul>
+		</div>
+		<div id="err_log" style="overflow: scroll; height: 30em"></div>
+		<div id="image_sources" style="visibility: hidden; display: none;">
+			<img id="default-texture" src="texture_map_test.png"></img>
+		</div>
+    </body>
+</html>

@@ -1,3 +1,5 @@
+'use strict';
+
 // math utility functions
 
 var RAD2DEG = 180 / Math.PI;

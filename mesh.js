@@ -1,3 +1,5 @@
+'use strict';
+
 function Vertex(inPosition, inNormal, inUv, inColor) {
 	this.position = inPosition || $V([0, 0, 0, 1]);
 	this.normal = inNormal || $V([0, 0, 0]);
